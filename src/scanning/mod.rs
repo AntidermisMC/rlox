@@ -5,8 +5,10 @@ use crate::error::Error;
 use crate::location::Location;
 use crate::scanning::token::TokenType;
 use crate::scanning::token::TokenType::*;
-use crate::source::Source;
 use token::Token;
+use crate::location_tracking_iterator::LocationTrackingIterator;
+use std::str::Chars;
+use std::iter::Peekable;
 
 /// Returns the current span and starts a new one.
 fn consume_span(start: &mut Location, end: Location) -> CodeSpan {
@@ -15,7 +17,7 @@ fn consume_span(start: &mut Location, end: Location) -> CodeSpan {
     span
 }
 
-fn next_is_equal(it: &mut Source) -> bool {
+fn next_is_equal(it: &mut LocationTrackingIterator<Peekable<Chars>>) -> bool {
     match it.peek() {
         Some(c) if *c == '=' => {
             it.next();
@@ -26,7 +28,7 @@ fn next_is_equal(it: &mut Source) -> bool {
 }
 
 fn delimit_operator(
-    source: &mut Source,
+    source: &mut LocationTrackingIterator<Peekable<Chars>>,
     current: &mut Location,
     no_equal: TokenType,
     equal: TokenType,
@@ -39,7 +41,7 @@ fn delimit_operator(
     }
 }
 
-pub fn scan(source: &mut Source, start: &mut Location) -> Result<Token, Error> {
+pub fn scan(source: &mut LocationTrackingIterator<Peekable<Chars>>, start: &mut Location) -> Result<Token, Error> {
     let mut current = *start;
     while let Some(char) = source.next() {
         current.char += 1;
@@ -115,7 +117,7 @@ pub fn scan(source: &mut Source, start: &mut Location) -> Result<Token, Error> {
 
 /// Scans every token in the given source and returns either the first error or a vector of all scanner tokens.
 pub fn scan_all(code: &str) -> Result<Vec<Token>, Error> {
-    let mut source = Source::new(code);
+    let mut source = LocationTrackingIterator::new(code.chars().peekable());
     let mut vec = Vec::new();
     let mut loc = Location::start();
     loop {
