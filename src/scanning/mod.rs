@@ -39,6 +39,14 @@ fn delimit_operator(
     }
 }
 
+fn extend_with_digits(source: &mut LocationTrackingIterator<Peekable<Chars>>, s: &mut std::string::String) {
+    let mut peek = source.peek();
+    while peek.is_some() && peek.unwrap().is_ascii_digit() {
+        s.push(source.next().unwrap());
+        peek = source.peek();
+    }
+}
+
 pub fn scan(source: &mut LocationTrackingIterator<Peekable<Chars>>, start: &mut Location) -> Result<Token, Error> {
     while let Some(char) = source.next() {
         return match char {
@@ -105,6 +113,18 @@ pub fn scan(source: &mut LocationTrackingIterator<Peekable<Chars>>, start: &mut 
                 }
                 source.next();
                 Ok(Token::new(TokenType::String(str), consume_span(start, source.get_location())))
+            }
+
+            // Number literals
+            c if c.is_ascii_digit() => {
+                let mut str = std::string::String::new();
+                str.push(c);
+                extend_with_digits(source, &mut str);
+                if source.peek() == Some(&'.') {
+                    str.push(source.next().unwrap());
+                    extend_with_digits(source, &mut str);
+                }
+                Ok(Token::new(Number(str.parse::<f64>().unwrap()), consume_span(start, source.get_location())))
             }
 
             // Errors
@@ -286,6 +306,41 @@ mod tests {
         Token { token: Plus, span: ([1,2]-[1,3]) }\n\
         Token { token: EOF, span: ([1,3]) }\n\
         ";
+        assert_equals(code, expected);
+    }
+
+    #[test]
+    fn integer() {
+        let code = "0";
+        let expected = "\
+        Token { token: Number(0.0), span: ([1,0]-[1,1]) }\n\
+        Token { token: EOF, span: ([1,1]) }\n\
+        ";
+        assert_equals(code, expected);
+    }
+
+    #[test]
+    fn float() {
+        let code = "1.0";
+        let expected = "\
+        Token { token: Number(1.0), span: ([1,0]-[1,3]) }\n\
+        Token { token: EOF, span: ([1,3]) }\n\
+        ";
+        assert_equals(code, expected);
+    }
+
+    #[test]
+    fn invalid_floats(){
+        let code = ".1 1.";
+        let expected = "\
+        Token { token: Dot, span: ([1,0]-[1,1]) }\n\
+        Token { token: Number(1.0), span: ([1,1]-[1,2]) }\n\
+        Token { token: Number(1.0), span: ([1,3]-[1,5]) }\n\
+        Token { token: EOF, span: ([1,5]) }\n\
+        ";
+        // Note: yes, it does accept integers with a trailing dot.
+        // This could be fixed but would be ugly so I'm leaving it be for now.
+        // TODO
         assert_equals(code, expected);
     }
 }

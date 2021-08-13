@@ -25,9 +25,9 @@ pub enum TokenType {
     Less,
     LessEqual,
 
-    Identifier,
+    Identifier(String),
     String(String),
-    Number,
+    Number(f64),
 
     And,
     Class,
