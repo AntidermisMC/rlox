@@ -1,18 +1,17 @@
 use std::iter::Peekable;
 use std::str::Chars;
+use crate::location::Location;
 
 pub struct Source<'a> {
     text: Peekable<Chars<'a>>,
-    line: usize,
-    column: usize,
+    location: Location,
 }
 
 impl<'a> Source<'a> {
     pub fn new(lines: &'a str) -> Self {
         Source {
             text: lines.chars().peekable(),
-            line: 1,
-            column: 0,
+            location: Location::start(),
         }
     }
 
@@ -28,10 +27,10 @@ impl<'a> Iterator for Source<'a> {
         let c = self.text.next();
         match c {
             Some('\n') => {
-                self.line += 1;
-                self.column = 0;
+                self.location.line += 1;
+                self.location.char = 0;
             }
-            Some(_) => self.column += 1,
+            Some(_) => self.location.char += 1,
             None => (),
         }
         c
