@@ -91,6 +91,22 @@ pub fn scan(source: &mut LocationTrackingIterator<Peekable<Chars>>, start: &mut 
                 continue;
             }
 
+            // String literals
+            '"' => {
+                let mut str = std::string::String::new();
+                while source.peek() != Some(&'"') {
+                    if let Some(c) = source.next() {
+                        str.push(c);
+                    }
+                    else {
+                        let span = consume_span(start, source.get_location());
+                        return Ok(Token::new(Invalid(Error::new("Unterminated string".to_string(), span)), span))
+                    }
+                }
+                source.next();
+                Ok(Token::new(TokenType::String(str), consume_span(start, source.get_location())))
+            }
+
             // Errors
             c => Ok(Token::new(
                 Invalid(Error::new(
@@ -238,6 +254,37 @@ mod tests {
         Token { token: LeftParen, span: ([1,0]-[1,1]) }\n\
         Token { token: RightParen, span: ([2,0]-[2,1]) }\n\
         Token { token: EOF, span: ([2,1]) }\n\
+        ";
+        assert_equals(code, expected);
+    }
+
+    #[test]
+    fn only_string() {
+        let code = r#""a string""#;
+        let expected = "\
+        Token { token: String(\"a string\"), span: ([1,0]-[1,10]) }\n\
+        Token { token: EOF, span: ([1,10]) }\n\
+        ";
+        assert_equals(code, expected);
+    }
+
+    #[test]
+    fn empty_string() {
+        let code = r#""""#;
+        let expected = "\
+        Token { token: String(\"\"), span: ([1,0]-[1,2]) }\n\
+        Token { token: EOF, span: ([1,2]) }\n\
+        ";
+        assert_equals(code, expected);
+    }
+
+    #[test]
+    fn string_and_operator() {
+        let code = r#"""+"#;
+        let expected = "\
+        Token { token: String(\"\"), span: ([1,0]-[1,2]) }\n\
+        Token { token: Plus, span: ([1,2]-[1,3]) }\n\
+        Token { token: EOF, span: ([1,3]) }\n\
         ";
         assert_equals(code, expected);
     }
