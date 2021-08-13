@@ -29,12 +29,10 @@ fn next_is_equal(it: &mut LocationTrackingIterator<Peekable<Chars>>) -> bool {
 
 fn delimit_operator(
     source: &mut LocationTrackingIterator<Peekable<Chars>>,
-    current: &mut Location,
     no_equal: TokenType,
     equal: TokenType,
 ) -> TokenType {
     if next_is_equal(source) {
-        current.char += 1;
         equal
     } else {
         no_equal
@@ -42,9 +40,7 @@ fn delimit_operator(
 }
 
 pub fn scan(source: &mut LocationTrackingIterator<Peekable<Chars>>, start: &mut Location) -> Result<Token, Error> {
-    let mut current = *start;
     while let Some(char) = source.next() {
-        current.char += 1;
         return match char {
 
             // Comments
@@ -52,52 +48,46 @@ pub fn scan(source: &mut LocationTrackingIterator<Peekable<Chars>>, start: &mut 
                 loop {
                     let next = source.next();
                     if next == Some('\n') {
-                        current.new_line();
-                        *start = current;
+                        *start = source.get_location();
                         break;
                     }
                     else if next == None {
-                        start.char = current.char - 1;
-                        return Ok(Token::new(EOF, consume_span(start, current)));
-                    }
-                    else {
-                        current.char += 1;
+                        return Ok(Token::new(EOF, consume_span(&mut source.get_location(), source.get_location())));
                     }
                 }
                 continue;
             }
 
             // Simple operators
-            '(' => Ok(Token::new(LeftParen, consume_span(start, current))),
-            ')' => Ok(Token::new(RightParen, consume_span(start, current))),
-            '{' => Ok(Token::new(LeftBrace, consume_span(start, current))),
-            '}' => Ok(Token::new(RightBrace, consume_span(start, current))),
-            ',' => Ok(Token::new(Comma, consume_span(start, current))),
-            '.' => Ok(Token::new(Dot, consume_span(start, current))),
-            '-' => Ok(Token::new(Minus, consume_span(start, current))),
-            '+' => Ok(Token::new(Plus, consume_span(start, current))),
-            ';' => Ok(Token::new(Semicolon, consume_span(start, current))),
-            '*' => Ok(Token::new(Star, consume_span(start, current))),
-            '/' => Ok(Token::new(Slash, consume_span(start, current))),
+            '(' => Ok(Token::new(LeftParen, consume_span(start, source.get_location()))),
+            ')' => Ok(Token::new(RightParen, consume_span(start, source.get_location()))),
+            '{' => Ok(Token::new(LeftBrace, consume_span(start, source.get_location()))),
+            '}' => Ok(Token::new(RightBrace, consume_span(start, source.get_location()))),
+            ',' => Ok(Token::new(Comma, consume_span(start, source.get_location()))),
+            '.' => Ok(Token::new(Dot, consume_span(start, source.get_location()))),
+            '-' => Ok(Token::new(Minus, consume_span(start, source.get_location()))),
+            '+' => Ok(Token::new(Plus, consume_span(start, source.get_location()))),
+            ';' => Ok(Token::new(Semicolon, consume_span(start, source.get_location()))),
+            '*' => Ok(Token::new(Star, consume_span(start, source.get_location()))),
+            '/' => Ok(Token::new(Slash, consume_span(start, source.get_location()))),
 
             // Composite operators
             '!' => Ok(Token::new(
-                delimit_operator(source, &mut current, Bang, BangEqual),
-                consume_span(start, current),
+                delimit_operator(source, Bang, BangEqual),
+                consume_span(start, source.get_location()),
             )),
             '=' => Ok(Token::new(
-                delimit_operator(source, &mut current, Equal, EqualEqual),
-                consume_span(start, current),
+                delimit_operator(source, Equal, EqualEqual),
+                consume_span(start, source.get_location()),
             )),
 
             // Whitespace
             '\t' | ' ' => {
-                *start = current;
+                *start = source.get_location();
                 continue;
             }
             '\n' => {
-                current.new_line();
-                *start = current;
+                *start = source.get_location();
                 continue;
             }
 
@@ -105,14 +95,13 @@ pub fn scan(source: &mut LocationTrackingIterator<Peekable<Chars>>, start: &mut 
             c => Ok(Token::new(
                 Invalid(Error::new(
                     format!("Invalid character '{}'", c),
-                    CodeSpan::new(Location::new(start.line, start.char), current),
+                    CodeSpan::new(Location::new(start.line, start.char), source.get_location()),
                 )),
-                CodeSpan::new(Location::new(start.line, start.char), current),
+                CodeSpan::new(Location::new(start.line, start.char), source.get_location()),
             )),
         };
     }
-    current.char += 1;
-    return Ok(Token::new(TokenType::EOF, consume_span(start, current)));
+    return Ok(Token::new(TokenType::EOF, consume_span(start, source.get_location())));
 }
 
 /// Scans every token in the given source and returns either the first error or a vector of all scanner tokens.
@@ -153,7 +142,7 @@ mod tests {
     #[test]
     fn empty() {
         let code = "";
-        let expected = "Token { token: EOF, span: ([1,0]-[1,1]) }\n";
+        let expected = "Token { token: EOF, span: ([1,0]) }\n";
         assert_equals(code, expected);
     }
 
@@ -162,7 +151,7 @@ mod tests {
         let code = "+";
         let expected = "\
         Token { token: Plus, span: ([1,0]-[1,1]) }\n\
-        Token { token: EOF, span: ([1,1]-[1,2]) }\n\
+        Token { token: EOF, span: ([1,1]) }\n\
         ";
         assert_equals(code, expected);
     }
@@ -172,7 +161,7 @@ mod tests {
         let code = "!=";
         let expected = "\
         Token { token: BangEqual, span: ([1,0]-[1,2]) }\n\
-        Token { token: EOF, span: ([1,2]-[1,3]) }\n\
+        Token { token: EOF, span: ([1,2]) }\n\
         ";
         assert_equals(code, expected);
     }
@@ -182,7 +171,7 @@ mod tests {
         let code = "!==";
         let expected = "Token { token: BangEqual, span: ([1,0]-[1,2]) }\n\
         Token { token: Equal, span: ([1,2]-[1,3]) }\n\
-        Token { token: EOF, span: ([1,3]-[1,4]) }\n";
+        Token { token: EOF, span: ([1,3]) }\n";
         assert_equals(code, expected);
     }
 
@@ -205,7 +194,7 @@ mod tests {
         Token { token: EqualEqual, span: ([1,13]-[1,15]) }\n\
         Token { token: Equal, span: ([1,15]-[1,16]) }\n\
         Token { token: Slash, span: ([1,16]-[1,17]) }\n\
-        Token { token: EOF, span: ([1,17]-[1,18]) }\n\
+        Token { token: EOF, span: ([1,17]) }\n\
         ";
         assert_equals(code, expected);
     }
@@ -213,7 +202,7 @@ mod tests {
     #[test]
     fn only_whitespace() {
         let code = "\t \n";
-        let expected = "Token { token: EOF, span: ([2,0]-[2,1]) }\n";
+        let expected = "Token { token: EOF, span: ([2,0]) }\n";
         assert_equals(code, expected);
     }
 
@@ -225,7 +214,7 @@ mod tests {
         Token { token: Equal, span: ([1,2]-[1,3]) }\n\
         Token { token: Equal, span: ([2,0]-[2,1]) }\n\
         Token { token: Equal, span: ([2,2]-[2,3]) }\n\
-        Token { token: EOF, span: ([2,3]-[2,4]) }\n\
+        Token { token: EOF, span: ([2,3]) }\n\
         ";
         assert_equals(code, expected);
     }
@@ -234,7 +223,7 @@ mod tests {
     fn only_comment() {
         let code = "// This is but a comment";
         let expected = "\
-        Token { token: EOF, span: ([1,23]-[1,24]) }\n\
+        Token { token: EOF, span: ([1,24]) }\n\
         ";
         assert_equals(code, expected);
     }
@@ -248,7 +237,7 @@ mod tests {
         let expected = "\
         Token { token: LeftParen, span: ([1,0]-[1,1]) }\n\
         Token { token: RightParen, span: ([2,0]-[2,1]) }\n\
-        Token { token: EOF, span: ([2,1]-[2,2]) }\n\
+        Token { token: EOF, span: ([2,1]) }\n\
         ";
         assert_equals(code, expected);
     }
