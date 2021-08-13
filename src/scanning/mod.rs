@@ -323,6 +323,16 @@ mod tests {
     }
 
     #[test]
+    fn unterminated_string() {
+        let code = r#""i swear i am compl"#;
+        let expected = "\
+        Token { token: Invalid(([1,0]-[1,19]) error: Unterminated string), span: ([1,0]-[1,19]) }\n\
+        Token { token: EOF, span: ([1,19]) }\n\
+        ";
+        assert_equals(code, expected);
+    }
+
+    #[test]
     fn integer() {
         let code = "0";
         let expected = "\
