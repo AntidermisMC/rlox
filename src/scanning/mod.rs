@@ -127,6 +127,19 @@ pub fn scan(source: &mut LocationTrackingIterator<Peekable<Chars>>, start: &mut 
                 Ok(Token::new(Number(str.parse::<f64>().unwrap()), consume_span(start, source.get_location())))
             }
 
+            // Identifiers
+            c if c.is_ascii_alphabetic() || c == '_' => {
+                let mut str = std::string::String::new();
+                str.push(c);
+                loop {
+                    match source.peek() {
+                        Some(c) if c.is_ascii_alphanumeric() || *c == '_' => str.push(source.next().unwrap()),
+                        _ => break,
+                    }
+                }
+                Ok(Token::new(Identifier(str), consume_span(start, source.get_location())))
+            }
+
             // Errors
             c => Ok(Token::new(
                 Invalid(Error::new(
@@ -341,6 +354,35 @@ mod tests {
         // Note: yes, it does accept integers with a trailing dot.
         // This could be fixed but would be ugly so I'm leaving it be for now.
         // TODO
+        assert_equals(code, expected);
+    }
+
+    #[test]
+    fn identifier() {
+        let code = "Bond";
+        let expected = "\
+        Token { token: Identifier(\"Bond\"), span: ([1,0]-[1,4]) }\n\
+        Token { token: EOF, span: ([1,4]) }\n\
+        ";
+        assert_equals(code, expected);
+    }
+
+    #[test]
+    fn many_identifiers() {
+        let code = "\
+        Bond James\n\
+        b0nd _007\n\
+        b _\
+        ";
+        let expected = "\
+        Token { token: Identifier(\"Bond\"), span: ([1,0]-[1,4]) }\n\
+        Token { token: Identifier(\"James\"), span: ([1,5]-[1,10]) }\n\
+        Token { token: Identifier(\"b0nd\"), span: ([2,0]-[2,4]) }\n\
+        Token { token: Identifier(\"_007\"), span: ([2,5]-[2,9]) }\n\
+        Token { token: Identifier(\"b\"), span: ([3,0]-[3,1]) }\n\
+        Token { token: Identifier(\"_\"), span: ([3,2]-[3,3]) }\n\
+        Token { token: EOF, span: ([3,3]) }\n\
+        ";
         assert_equals(code, expected);
     }
 }
