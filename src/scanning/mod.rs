@@ -137,7 +137,28 @@ pub fn scan(source: &mut LocationTrackingIterator<Peekable<Chars>>, start: &mut 
                         _ => break,
                     }
                 }
-                Ok(Token::new(Identifier(str), consume_span(start, source.get_location())))
+                Ok(Token::new(
+                    match str.as_str() {
+                        "and" => And,
+                        "class" => Class,
+                        "else" => Else,
+                        "false" => False,
+                        "for" => For,
+                        "fun" => Fun,
+                        "if" => If,
+                        "nil" => Nil,
+                        "or" => Or,
+                        "print" => Print,
+                        "return" => Return,
+                        "super" => Super,
+                        "this" => This,
+                        "true" => True,
+                        "var" => Var,
+                        "while" => While,
+                        _ => Identifier(str)
+                    },
+                    consume_span(start, source.get_location())
+                ))
             }
 
             // Errors
@@ -392,6 +413,67 @@ mod tests {
         Token { token: Identifier(\"b\"), span: ([3,0]-[3,1]) }\n\
         Token { token: Identifier(\"_\"), span: ([3,2]-[3,3]) }\n\
         Token { token: EOF, span: ([3,3]) }\n\
+        ";
+        assert_equals(code, expected);
+    }
+
+    #[test]
+    fn reserved_word() {
+        let code = "if";
+        let expected = "\
+        Token { token: If, span: ([1,0]-[1,2]) }\n\
+        Token { token: EOF, span: ([1,2]) }\n\
+        ";
+        assert_equals(code, expected);
+    }
+
+    #[test]
+    fn maximal_munch() {
+        let code = "ifor";
+        let expected = "\
+        Token { token: Identifier(\"ifor\"), span: ([1,0]-[1,4]) }\n\
+        Token { token: EOF, span: ([1,4]) }\n\
+        ";
+        assert_equals(code, expected);
+    }
+
+    #[test]
+    fn all_reserved_word() {
+        let code = "\
+        and\n\
+        class\n\
+        else\n\
+        false\n\
+        for\n\
+        fun\n\
+        if\n\
+        nil\n\
+        or\n\
+        print\n\
+        return\n\
+        super\n\
+        this\n\
+        true\n\
+        var\n\
+        while\n\
+        ";
+        let expected = "Token { token: And, span: ([1,0]-[1,3]) }\n\
+        Token { token: Class, span: ([2,0]-[2,5]) }\n\
+        Token { token: Else, span: ([3,0]-[3,4]) }\n\
+        Token { token: False, span: ([4,0]-[4,5]) }\n\
+        Token { token: For, span: ([5,0]-[5,3]) }\n\
+        Token { token: Fun, span: ([6,0]-[6,3]) }\n\
+        Token { token: If, span: ([7,0]-[7,2]) }\n\
+        Token { token: Nil, span: ([8,0]-[8,3]) }\n\
+        Token { token: Or, span: ([9,0]-[9,2]) }\n\
+        Token { token: Print, span: ([10,0]-[10,5]) }\n\
+        Token { token: Return, span: ([11,0]-[11,6]) }\n\
+        Token { token: Super, span: ([12,0]-[12,5]) }\n\
+        Token { token: This, span: ([13,0]-[13,4]) }\n\
+        Token { token: True, span: ([14,0]-[14,4]) }\n\
+        Token { token: Var, span: ([15,0]-[15,3]) }\n\
+        Token { token: While, span: ([16,0]-[16,5]) }\n\
+        Token { token: EOF, span: ([17,0]) }\n\
         ";
         assert_equals(code, expected);
     }
