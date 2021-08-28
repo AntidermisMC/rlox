@@ -115,6 +115,14 @@ pub fn scan(
                 delimit_operator(source, Equal, EqualEqual),
                 consume_span(start, source.get_location()),
             )),
+            '<' => Ok(Token::new(
+                delimit_operator(source, Less, LessEqual),
+                consume_span(start, source.get_location()),
+            )),
+            '>' => Ok(Token::new(
+                delimit_operator(source, Greater, GreaterEqual),
+                consume_span(start, source.get_location()),
+            )),
 
             // Whitespace
             '\t' | ' ' => {
@@ -291,7 +299,7 @@ mod tests {
 
     #[test]
     fn all_operators() {
-        let code = "(){},.-+;*!!====/";
+        let code = "(){},.-+;*!!====/<<=>>=";
         let expected = "\
         Token { token: LeftParen, span: ([1,0]-[1,1]) }\n\
         Token { token: RightParen, span: ([1,1]-[1,2]) }\n\
@@ -308,7 +316,11 @@ mod tests {
         Token { token: EqualEqual, span: ([1,13]-[1,15]) }\n\
         Token { token: Equal, span: ([1,15]-[1,16]) }\n\
         Token { token: Slash, span: ([1,16]-[1,17]) }\n\
-        Token { token: EOF, span: ([1,17]) }\n\
+        Token { token: Less, span: ([1,17]-[1,18]) }\n\
+        Token { token: LessEqual, span: ([1,18]-[1,20]) }\n\
+        Token { token: Greater, span: ([1,20]-[1,21]) }\n\
+        Token { token: GreaterEqual, span: ([1,21]-[1,23]) }\n\
+        Token { token: EOF, span: ([1,23]) }\n\
         ";
         assert_equals(code, expected);
     }
