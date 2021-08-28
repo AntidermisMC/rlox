@@ -26,6 +26,7 @@ fn next_is_equal(it: &mut LocationTrackingIterator<Chars>) -> bool {
     }
 }
 
+/// Delimits an operator depending on whether the next character is '=' or not.
 fn delimit_operator(
     source: &mut LocationTrackingIterator<Chars>,
     no_equal: TokenType,
@@ -46,6 +47,8 @@ fn extend_with_digits(source: &mut LocationTrackingIterator<Chars>, s: &mut std:
     }
 }
 
+/// Scans a text stream.
+/// start should be Location::start() unless resuming from a previous iterator's text.
 pub fn scan(
     source: &mut LocationTrackingIterator<Chars>,
     start: &mut Location,
