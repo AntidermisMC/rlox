@@ -44,8 +44,7 @@ impl Debug for CodeSpan {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         if self.start != self.end {
             write!(f, "({}-{})", self.start, self.end)
-        }
-        else {
+        } else {
             write!(f, "({})", self.start)
         }
     }

@@ -1,13 +1,13 @@
 mod code_span;
 mod error;
 mod location;
-mod scanning;
 mod location_tracking_iterator;
+mod scanning;
 use crate::location::Location;
+use crate::location_tracking_iterator::LocationTrackingIterator;
 use crate::scanning::token::TokenType;
 use std::env;
 use std::io::{Read, Write};
-use crate::location_tracking_iterator::LocationTrackingIterator;
 use std::str::Chars;
 
 fn main() {

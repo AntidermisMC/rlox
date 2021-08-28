@@ -1,17 +1,16 @@
 use crate::location::Location;
 
-pub struct LocationTrackingIterator<T: Iterator<Item=char>> {
+pub struct LocationTrackingIterator<T: Iterator<Item = char>> {
     location: Location,
     it: T,
     peek_1: Option<char>,
     peek_2: Option<char>,
 }
 
-impl<T: Iterator<Item=char>> Iterator for LocationTrackingIterator<T> {
+impl<T: Iterator<Item = char>> Iterator for LocationTrackingIterator<T> {
     type Item = char;
 
     fn next(&mut self) -> Option<Self::Item> {
-
         // Something has been peeked already
         if let Some(c1) = self.peek_1 {
             self.peek_1 = self.peek_2.take();
@@ -35,7 +34,7 @@ impl<T: Iterator<Item=char>> Iterator for LocationTrackingIterator<T> {
     }
 }
 
-impl<T: Iterator<Item=char>> LocationTrackingIterator<T> {
+impl<T: Iterator<Item = char>> LocationTrackingIterator<T> {
     pub fn get_location(&self) -> Location {
         self.location
     }
@@ -61,8 +60,7 @@ impl<T: Iterator<Item=char>> LocationTrackingIterator<T> {
             let mut loc = self.location;
             loc.advance(c);
             Some(loc)
-        }
-        else {
+        } else {
             None
         }
     }
@@ -70,12 +68,10 @@ impl<T: Iterator<Item=char>> LocationTrackingIterator<T> {
     pub fn peek_2(&mut self) -> Option<&<Self as Iterator>::Item> {
         if self.peek_2 != None {
             self.peek_2.as_ref()
-        }
-        else if let Some(_) = self.peek() {
+        } else if let Some(_) = self.peek() {
             self.peek_2 = self.it.next();
             self.peek_2.as_ref()
-        }
-        else {
+        } else {
             None
         }
     }
@@ -85,8 +81,7 @@ impl<T: Iterator<Item=char>> LocationTrackingIterator<T> {
             let mut loc = self.peek_location().unwrap();
             loc.advance(c);
             Some(loc)
-        }
-        else {
+        } else {
             None
         }
     }
@@ -94,11 +89,14 @@ impl<T: Iterator<Item=char>> LocationTrackingIterator<T> {
 
 #[cfg(test)]
 mod tests {
-    use crate::location_tracking_iterator::LocationTrackingIterator;
     use crate::location::Location;
+    use crate::location_tracking_iterator::LocationTrackingIterator;
 
     fn assert_eq(expected: &str) {
-        assert_eq!(LocationTrackingIterator::new(expected.chars()).collect::<String>(), expected)
+        assert_eq!(
+            LocationTrackingIterator::new(expected.chars()).collect::<String>(),
+            expected
+        )
     }
 
     #[test]

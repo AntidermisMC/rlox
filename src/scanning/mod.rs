@@ -3,11 +3,11 @@ pub mod token;
 use crate::code_span::CodeSpan;
 use crate::error::Error;
 use crate::location::Location;
+use crate::location_tracking_iterator::LocationTrackingIterator;
 use crate::scanning::token::TokenType;
 use crate::scanning::token::TokenType::*;
-use token::Token;
-use crate::location_tracking_iterator::LocationTrackingIterator;
 use std::str::Chars;
+use token::Token;
 
 /// Returns the current span and starts a new one.
 fn consume_span(start: &mut Location, end: Location) -> CodeSpan {
@@ -46,10 +46,12 @@ fn extend_with_digits(source: &mut LocationTrackingIterator<Chars>, s: &mut std:
     }
 }
 
-pub fn scan(source: &mut LocationTrackingIterator<Chars>, start: &mut Location) -> Result<Token, Error> {
+pub fn scan(
+    source: &mut LocationTrackingIterator<Chars>,
+    start: &mut Location,
+) -> Result<Token, Error> {
     while let Some(char) = source.next() {
         return match char {
-
             // Comments
             '/' if source.peek() == Some(&'/') => {
                 loop {
@@ -57,26 +59,52 @@ pub fn scan(source: &mut LocationTrackingIterator<Chars>, start: &mut Location) 
                     if next == Some('\n') {
                         *start = source.get_location();
                         break;
-                    }
-                    else if next == None {
-                        return Ok(Token::new(EOF, consume_span(&mut source.get_location(), source.get_location())));
+                    } else if next == None {
+                        return Ok(Token::new(
+                            EOF,
+                            consume_span(&mut source.get_location(), source.get_location()),
+                        ));
                     }
                 }
                 continue;
             }
 
             // Simple operators
-            '(' => Ok(Token::new(LeftParen, consume_span(start, source.get_location()))),
-            ')' => Ok(Token::new(RightParen, consume_span(start, source.get_location()))),
-            '{' => Ok(Token::new(LeftBrace, consume_span(start, source.get_location()))),
-            '}' => Ok(Token::new(RightBrace, consume_span(start, source.get_location()))),
-            ',' => Ok(Token::new(Comma, consume_span(start, source.get_location()))),
+            '(' => Ok(Token::new(
+                LeftParen,
+                consume_span(start, source.get_location()),
+            )),
+            ')' => Ok(Token::new(
+                RightParen,
+                consume_span(start, source.get_location()),
+            )),
+            '{' => Ok(Token::new(
+                LeftBrace,
+                consume_span(start, source.get_location()),
+            )),
+            '}' => Ok(Token::new(
+                RightBrace,
+                consume_span(start, source.get_location()),
+            )),
+            ',' => Ok(Token::new(
+                Comma,
+                consume_span(start, source.get_location()),
+            )),
             '.' => Ok(Token::new(Dot, consume_span(start, source.get_location()))),
-            '-' => Ok(Token::new(Minus, consume_span(start, source.get_location()))),
+            '-' => Ok(Token::new(
+                Minus,
+                consume_span(start, source.get_location()),
+            )),
             '+' => Ok(Token::new(Plus, consume_span(start, source.get_location()))),
-            ';' => Ok(Token::new(Semicolon, consume_span(start, source.get_location()))),
+            ';' => Ok(Token::new(
+                Semicolon,
+                consume_span(start, source.get_location()),
+            )),
             '*' => Ok(Token::new(Star, consume_span(start, source.get_location()))),
-            '/' => Ok(Token::new(Slash, consume_span(start, source.get_location()))),
+            '/' => Ok(Token::new(
+                Slash,
+                consume_span(start, source.get_location()),
+            )),
 
             // Composite operators
             '!' => Ok(Token::new(
@@ -104,14 +132,19 @@ pub fn scan(source: &mut LocationTrackingIterator<Chars>, start: &mut Location) 
                 while source.peek() != Some(&'"') {
                     if let Some(c) = source.next() {
                         str.push(c);
-                    }
-                    else {
+                    } else {
                         let span = consume_span(start, source.get_location());
-                        return Ok(Token::new(Invalid(Error::new("Unterminated string".to_string(), span)), span))
+                        return Ok(Token::new(
+                            Invalid(Error::new("Unterminated string".to_string(), span)),
+                            span,
+                        ));
                     }
                 }
                 source.next();
-                Ok(Token::new(TokenType::String(str), consume_span(start, source.get_location())))
+                Ok(Token::new(
+                    TokenType::String(str),
+                    consume_span(start, source.get_location()),
+                ))
             }
 
             // Number literals
@@ -120,10 +153,17 @@ pub fn scan(source: &mut LocationTrackingIterator<Chars>, start: &mut Location) 
                 str.push(c);
                 extend_with_digits(source, &mut str);
                 if source.peek() == Some(&'.') {
-                    str.push(source.next().unwrap());
-                    extend_with_digits(source, &mut str);
+                    if let Some(c) = source.peek_2() {
+                        if c.is_ascii_digit() {
+                            str.push(source.next().unwrap());
+                            extend_with_digits(source, &mut str);
+                        }
+                    }
                 }
-                Ok(Token::new(Number(str.parse::<f64>().unwrap()), consume_span(start, source.get_location())))
+                Ok(Token::new(
+                    Number(str.parse::<f64>().unwrap()),
+                    consume_span(start, source.get_location()),
+                ))
             }
 
             // Identifiers
@@ -132,7 +172,9 @@ pub fn scan(source: &mut LocationTrackingIterator<Chars>, start: &mut Location) 
                 str.push(c);
                 loop {
                     match source.peek() {
-                        Some(c) if c.is_ascii_alphanumeric() || *c == '_' => str.push(source.next().unwrap()),
+                        Some(c) if c.is_ascii_alphanumeric() || *c == '_' => {
+                            str.push(source.next().unwrap())
+                        }
                         _ => break,
                     }
                 }
@@ -154,9 +196,9 @@ pub fn scan(source: &mut LocationTrackingIterator<Chars>, start: &mut Location) 
                         "true" => True,
                         "var" => Var,
                         "while" => While,
-                        _ => Identifier(str)
+                        _ => Identifier(str),
                     },
-                    consume_span(start, source.get_location())
+                    consume_span(start, source.get_location()),
                 ))
             }
 
@@ -170,7 +212,10 @@ pub fn scan(source: &mut LocationTrackingIterator<Chars>, start: &mut Location) 
             )),
         };
     }
-    return Ok(Token::new(TokenType::EOF, consume_span(start, source.get_location())));
+    return Ok(Token::new(
+        TokenType::EOF,
+        consume_span(start, source.get_location()),
+    ));
 }
 
 /// Scans every token in the given source and returns either the first error or a vector of all scanner tokens.
@@ -373,17 +418,15 @@ mod tests {
     }
 
     #[test]
-    fn invalid_floats(){
+    fn invalid_floats() {
         let code = ".1 1.";
         let expected = "\
         Token { token: Dot, span: ([1,0]-[1,1]) }\n\
         Token { token: Number(1.0), span: ([1,1]-[1,2]) }\n\
-        Token { token: Number(1.0), span: ([1,3]-[1,5]) }\n\
+        Token { token: Number(1.0), span: ([1,3]-[1,4]) }\n\
+        Token { token: Dot, span: ([1,4]-[1,5]) }\n\
         Token { token: EOF, span: ([1,5]) }\n\
         ";
-        // Note: yes, it does accept integers with a trailing dot.
-        // This could be fixed but would be ugly so I'm leaving it be for now.
-        // TODO
         assert_equals(code, expected);
     }
 
