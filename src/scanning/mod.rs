@@ -264,7 +264,7 @@ mod tests {
     #[test]
     fn empty() {
         let code = "";
-        let expected = "Token { token: EOF, span: ([1,0]) }\n";
+        let expected = "[1,0] EOF\n";
         assert_equals(code, expected);
     }
 
@@ -272,8 +272,8 @@ mod tests {
     fn one_operator() {
         let code = "+";
         let expected = "\
-        Token { token: Plus, span: ([1,0]-[1,1]) }\n\
-        Token { token: EOF, span: ([1,1]) }\n\
+        [1,0]-[1,1] Plus\n\
+        [1,1] EOF\n\
         ";
         assert_equals(code, expected);
     }
@@ -282,8 +282,8 @@ mod tests {
     fn two_char_operator() {
         let code = "!=";
         let expected = "\
-        Token { token: BangEqual, span: ([1,0]-[1,2]) }\n\
-        Token { token: EOF, span: ([1,2]) }\n\
+        [1,0]-[1,2] BangEqual\n\
+        [1,2] EOF\n\
         ";
         assert_equals(code, expected);
     }
@@ -291,9 +291,9 @@ mod tests {
     #[test]
     fn bang_equal_equal() {
         let code = "!==";
-        let expected = "Token { token: BangEqual, span: ([1,0]-[1,2]) }\n\
-        Token { token: Equal, span: ([1,2]-[1,3]) }\n\
-        Token { token: EOF, span: ([1,3]) }\n";
+        let expected = "[1,0]-[1,2] BangEqual\n\
+        [1,2]-[1,3] Equal\n\
+        [1,3] EOF\n";
         assert_equals(code, expected);
     }
 
@@ -301,26 +301,26 @@ mod tests {
     fn all_operators() {
         let code = "(){},.-+;*!!====/<<=>>=";
         let expected = "\
-        Token { token: LeftParen, span: ([1,0]-[1,1]) }\n\
-        Token { token: RightParen, span: ([1,1]-[1,2]) }\n\
-        Token { token: LeftBrace, span: ([1,2]-[1,3]) }\n\
-        Token { token: RightBrace, span: ([1,3]-[1,4]) }\n\
-        Token { token: Comma, span: ([1,4]-[1,5]) }\n\
-        Token { token: Dot, span: ([1,5]-[1,6]) }\n\
-        Token { token: Minus, span: ([1,6]-[1,7]) }\n\
-        Token { token: Plus, span: ([1,7]-[1,8]) }\n\
-        Token { token: Semicolon, span: ([1,8]-[1,9]) }\n\
-        Token { token: Star, span: ([1,9]-[1,10]) }\n\
-        Token { token: Bang, span: ([1,10]-[1,11]) }\n\
-        Token { token: BangEqual, span: ([1,11]-[1,13]) }\n\
-        Token { token: EqualEqual, span: ([1,13]-[1,15]) }\n\
-        Token { token: Equal, span: ([1,15]-[1,16]) }\n\
-        Token { token: Slash, span: ([1,16]-[1,17]) }\n\
-        Token { token: Less, span: ([1,17]-[1,18]) }\n\
-        Token { token: LessEqual, span: ([1,18]-[1,20]) }\n\
-        Token { token: Greater, span: ([1,20]-[1,21]) }\n\
-        Token { token: GreaterEqual, span: ([1,21]-[1,23]) }\n\
-        Token { token: EOF, span: ([1,23]) }\n\
+        [1,0]-[1,1] LeftParen\n\
+        [1,1]-[1,2] RightParen\n\
+        [1,2]-[1,3] LeftBrace\n\
+        [1,3]-[1,4] RightBrace\n\
+        [1,4]-[1,5] Comma\n\
+        [1,5]-[1,6] Dot\n\
+        [1,6]-[1,7] Minus\n\
+        [1,7]-[1,8] Plus\n\
+        [1,8]-[1,9] Semicolon\n\
+        [1,9]-[1,10] Star\n\
+        [1,10]-[1,11] Bang\n\
+        [1,11]-[1,13] BangEqual\n\
+        [1,13]-[1,15] EqualEqual\n\
+        [1,15]-[1,16] Equal\n\
+        [1,16]-[1,17] Slash\n\
+        [1,17]-[1,18] Less\n\
+        [1,18]-[1,20] LessEqual\n\
+        [1,20]-[1,21] Greater\n\
+        [1,21]-[1,23] GreaterEqual\n\
+        [1,23] EOF\n\
         ";
         assert_equals(code, expected);
     }
@@ -328,7 +328,7 @@ mod tests {
     #[test]
     fn only_whitespace() {
         let code = "\t \n";
-        let expected = "Token { token: EOF, span: ([2,0]) }\n";
+        let expected = "[2,0] EOF\n";
         assert_equals(code, expected);
     }
 
@@ -336,11 +336,11 @@ mod tests {
     fn whitespace_between_ops() {
         let code = "! =\n=\t=";
         let expected = "\
-        Token { token: Bang, span: ([1,0]-[1,1]) }\n\
-        Token { token: Equal, span: ([1,2]-[1,3]) }\n\
-        Token { token: Equal, span: ([2,0]-[2,1]) }\n\
-        Token { token: Equal, span: ([2,2]-[2,3]) }\n\
-        Token { token: EOF, span: ([2,3]) }\n\
+        [1,0]-[1,1] Bang\n\
+        [1,2]-[1,3] Equal\n\
+        [2,0]-[2,1] Equal\n\
+        [2,2]-[2,3] Equal\n\
+        [2,3] EOF\n\
         ";
         assert_equals(code, expected);
     }
@@ -349,7 +349,7 @@ mod tests {
     fn only_comment() {
         let code = "// This is but a comment";
         let expected = "\
-        Token { token: EOF, span: ([1,24]) }\n\
+        [1,24] EOF\n\
         ";
         assert_equals(code, expected);
     }
@@ -361,9 +361,9 @@ mod tests {
         )\
         ";
         let expected = "\
-        Token { token: LeftParen, span: ([1,0]-[1,1]) }\n\
-        Token { token: RightParen, span: ([2,0]-[2,1]) }\n\
-        Token { token: EOF, span: ([2,1]) }\n\
+        [1,0]-[1,1] LeftParen\n\
+        [2,0]-[2,1] RightParen\n\
+        [2,1] EOF\n\
         ";
         assert_equals(code, expected);
     }
@@ -372,8 +372,8 @@ mod tests {
     fn only_string() {
         let code = r#""a string""#;
         let expected = "\
-        Token { token: String(\"a string\"), span: ([1,0]-[1,10]) }\n\
-        Token { token: EOF, span: ([1,10]) }\n\
+        [1,0]-[1,10] String(\"a string\")\n\
+        [1,10] EOF\n\
         ";
         assert_equals(code, expected);
     }
@@ -382,8 +382,8 @@ mod tests {
     fn empty_string() {
         let code = r#""""#;
         let expected = "\
-        Token { token: String(\"\"), span: ([1,0]-[1,2]) }\n\
-        Token { token: EOF, span: ([1,2]) }\n\
+        [1,0]-[1,2] String(\"\")\n\
+        [1,2] EOF\n\
         ";
         assert_equals(code, expected);
     }
@@ -392,9 +392,9 @@ mod tests {
     fn string_and_operator() {
         let code = r#"""+"#;
         let expected = "\
-        Token { token: String(\"\"), span: ([1,0]-[1,2]) }\n\
-        Token { token: Plus, span: ([1,2]-[1,3]) }\n\
-        Token { token: EOF, span: ([1,3]) }\n\
+        [1,0]-[1,2] String(\"\")\n\
+        [1,2]-[1,3] Plus\n\
+        [1,3] EOF\n\
         ";
         assert_equals(code, expected);
     }
@@ -403,8 +403,8 @@ mod tests {
     fn unterminated_string() {
         let code = r#""i swear i am compl"#;
         let expected = "\
-        Token { token: Invalid(([1,0]-[1,19]) error: Unterminated string), span: ([1,0]-[1,19]) }\n\
-        Token { token: EOF, span: ([1,19]) }\n\
+        [1,0]-[1,19] Invalid([1,0]-[1,19] error: Unterminated string)\n\
+        [1,19] EOF\n\
         ";
         assert_equals(code, expected);
     }
@@ -413,8 +413,8 @@ mod tests {
     fn integer() {
         let code = "0";
         let expected = "\
-        Token { token: Number(0.0), span: ([1,0]-[1,1]) }\n\
-        Token { token: EOF, span: ([1,1]) }\n\
+        [1,0]-[1,1] Number(0.0)\n\
+        [1,1] EOF\n\
         ";
         assert_equals(code, expected);
     }
@@ -423,8 +423,8 @@ mod tests {
     fn float() {
         let code = "1.0";
         let expected = "\
-        Token { token: Number(1.0), span: ([1,0]-[1,3]) }\n\
-        Token { token: EOF, span: ([1,3]) }\n\
+        [1,0]-[1,3] Number(1.0)\n\
+        [1,3] EOF\n\
         ";
         assert_equals(code, expected);
     }
@@ -433,11 +433,11 @@ mod tests {
     fn invalid_floats() {
         let code = ".1 1.";
         let expected = "\
-        Token { token: Dot, span: ([1,0]-[1,1]) }\n\
-        Token { token: Number(1.0), span: ([1,1]-[1,2]) }\n\
-        Token { token: Number(1.0), span: ([1,3]-[1,4]) }\n\
-        Token { token: Dot, span: ([1,4]-[1,5]) }\n\
-        Token { token: EOF, span: ([1,5]) }\n\
+        [1,0]-[1,1] Dot\n\
+        [1,1]-[1,2] Number(1.0)\n\
+        [1,3]-[1,4] Number(1.0)\n\
+        [1,4]-[1,5] Dot\n\
+        [1,5] EOF\n\
         ";
         assert_equals(code, expected);
     }
@@ -446,8 +446,8 @@ mod tests {
     fn identifier() {
         let code = "Bond";
         let expected = "\
-        Token { token: Identifier(\"Bond\"), span: ([1,0]-[1,4]) }\n\
-        Token { token: EOF, span: ([1,4]) }\n\
+        [1,0]-[1,4] Identifier(\"Bond\")\n\
+        [1,4] EOF\n\
         ";
         assert_equals(code, expected);
     }
@@ -460,13 +460,13 @@ mod tests {
         b _\
         ";
         let expected = "\
-        Token { token: Identifier(\"Bond\"), span: ([1,0]-[1,4]) }\n\
-        Token { token: Identifier(\"James\"), span: ([1,5]-[1,10]) }\n\
-        Token { token: Identifier(\"b0nd\"), span: ([2,0]-[2,4]) }\n\
-        Token { token: Identifier(\"_007\"), span: ([2,5]-[2,9]) }\n\
-        Token { token: Identifier(\"b\"), span: ([3,0]-[3,1]) }\n\
-        Token { token: Identifier(\"_\"), span: ([3,2]-[3,3]) }\n\
-        Token { token: EOF, span: ([3,3]) }\n\
+        [1,0]-[1,4] Identifier(\"Bond\")\n\
+        [1,5]-[1,10] Identifier(\"James\")\n\
+        [2,0]-[2,4] Identifier(\"b0nd\")\n\
+        [2,5]-[2,9] Identifier(\"_007\")\n\
+        [3,0]-[3,1] Identifier(\"b\")\n\
+        [3,2]-[3,3] Identifier(\"_\")\n\
+        [3,3] EOF\n\
         ";
         assert_equals(code, expected);
     }
@@ -475,8 +475,8 @@ mod tests {
     fn reserved_word() {
         let code = "if";
         let expected = "\
-        Token { token: If, span: ([1,0]-[1,2]) }\n\
-        Token { token: EOF, span: ([1,2]) }\n\
+        [1,0]-[1,2] If\n\
+        [1,2] EOF\n\
         ";
         assert_equals(code, expected);
     }
@@ -485,8 +485,8 @@ mod tests {
     fn maximal_munch() {
         let code = "ifor";
         let expected = "\
-        Token { token: Identifier(\"ifor\"), span: ([1,0]-[1,4]) }\n\
-        Token { token: EOF, span: ([1,4]) }\n\
+        [1,0]-[1,4] Identifier(\"ifor\")\n\
+        [1,4] EOF\n\
         ";
         assert_equals(code, expected);
     }
@@ -511,23 +511,23 @@ mod tests {
         var\n\
         while\n\
         ";
-        let expected = "Token { token: And, span: ([1,0]-[1,3]) }\n\
-        Token { token: Class, span: ([2,0]-[2,5]) }\n\
-        Token { token: Else, span: ([3,0]-[3,4]) }\n\
-        Token { token: False, span: ([4,0]-[4,5]) }\n\
-        Token { token: For, span: ([5,0]-[5,3]) }\n\
-        Token { token: Fun, span: ([6,0]-[6,3]) }\n\
-        Token { token: If, span: ([7,0]-[7,2]) }\n\
-        Token { token: Nil, span: ([8,0]-[8,3]) }\n\
-        Token { token: Or, span: ([9,0]-[9,2]) }\n\
-        Token { token: Print, span: ([10,0]-[10,5]) }\n\
-        Token { token: Return, span: ([11,0]-[11,6]) }\n\
-        Token { token: Super, span: ([12,0]-[12,5]) }\n\
-        Token { token: This, span: ([13,0]-[13,4]) }\n\
-        Token { token: True, span: ([14,0]-[14,4]) }\n\
-        Token { token: Var, span: ([15,0]-[15,3]) }\n\
-        Token { token: While, span: ([16,0]-[16,5]) }\n\
-        Token { token: EOF, span: ([17,0]) }\n\
+        let expected = "[1,0]-[1,3] And\n\
+        [2,0]-[2,5] Class\n\
+        [3,0]-[3,4] Else\n\
+        [4,0]-[4,5] False\n\
+        [5,0]-[5,3] For\n\
+        [6,0]-[6,3] Fun\n\
+        [7,0]-[7,2] If\n\
+        [8,0]-[8,3] Nil\n\
+        [9,0]-[9,2] Or\n\
+        [10,0]-[10,5] Print\n\
+        [11,0]-[11,6] Return\n\
+        [12,0]-[12,5] Super\n\
+        [13,0]-[13,4] This\n\
+        [14,0]-[14,4] True\n\
+        [15,0]-[15,3] Var\n\
+        [16,0]-[16,5] While\n\
+        [17,0] EOF\n\
         ";
         assert_equals(code, expected);
     }

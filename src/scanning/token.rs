@@ -1,5 +1,5 @@
 use crate::code_span::CodeSpan;
-use std::fmt::{Display, Formatter};
+use std::fmt::{Display, Formatter, Debug};
 
 #[derive(Debug, PartialEq)]
 /// Represents the type of a token.
@@ -51,7 +51,7 @@ pub enum TokenType {
 }
 
 /// Represents a token along with its location in the source code.
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq)]
 pub struct Token {
     token: TokenType,
     span: CodeSpan,
@@ -74,5 +74,11 @@ impl Token {
 impl Display for Token {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}: '{:?}'", self.span, self.token)
+    }
+}
+
+impl Debug for Token {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{} {:?}", self.span, self.token)
     }
 }
