@@ -8,7 +8,6 @@ use crate::scanning::token::TokenType::*;
 use token::Token;
 use crate::location_tracking_iterator::LocationTrackingIterator;
 use std::str::Chars;
-use std::iter::Peekable;
 
 /// Returns the current span and starts a new one.
 fn consume_span(start: &mut Location, end: Location) -> CodeSpan {
@@ -17,7 +16,7 @@ fn consume_span(start: &mut Location, end: Location) -> CodeSpan {
     span
 }
 
-fn next_is_equal(it: &mut LocationTrackingIterator<Peekable<Chars>>) -> bool {
+fn next_is_equal(it: &mut LocationTrackingIterator<Chars>) -> bool {
     match it.peek() {
         Some(c) if *c == '=' => {
             it.next();
@@ -28,7 +27,7 @@ fn next_is_equal(it: &mut LocationTrackingIterator<Peekable<Chars>>) -> bool {
 }
 
 fn delimit_operator(
-    source: &mut LocationTrackingIterator<Peekable<Chars>>,
+    source: &mut LocationTrackingIterator<Chars>,
     no_equal: TokenType,
     equal: TokenType,
 ) -> TokenType {
@@ -39,7 +38,7 @@ fn delimit_operator(
     }
 }
 
-fn extend_with_digits(source: &mut LocationTrackingIterator<Peekable<Chars>>, s: &mut std::string::String) {
+fn extend_with_digits(source: &mut LocationTrackingIterator<Chars>, s: &mut std::string::String) {
     let mut peek = source.peek();
     while peek.is_some() && peek.unwrap().is_ascii_digit() {
         s.push(source.next().unwrap());
@@ -47,7 +46,7 @@ fn extend_with_digits(source: &mut LocationTrackingIterator<Peekable<Chars>>, s:
     }
 }
 
-pub fn scan(source: &mut LocationTrackingIterator<Peekable<Chars>>, start: &mut Location) -> Result<Token, Error> {
+pub fn scan(source: &mut LocationTrackingIterator<Chars>, start: &mut Location) -> Result<Token, Error> {
     while let Some(char) = source.next() {
         return match char {
 
@@ -176,7 +175,7 @@ pub fn scan(source: &mut LocationTrackingIterator<Peekable<Chars>>, start: &mut 
 
 /// Scans every token in the given source and returns either the first error or a vector of all scanner tokens.
 pub fn scan_all(code: &str) -> Result<Vec<Token>, Error> {
-    let mut source = LocationTrackingIterator::new(code.chars().peekable());
+    let mut source = LocationTrackingIterator::new(code.chars());
     let mut vec = Vec::new();
     let mut loc = Location::start();
     loop {

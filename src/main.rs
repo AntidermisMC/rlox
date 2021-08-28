@@ -3,13 +3,11 @@ mod error;
 mod location;
 mod scanning;
 mod location_tracking_iterator;
-
 use crate::location::Location;
 use crate::scanning::token::TokenType;
 use std::env;
 use std::io::{Read, Write};
 use crate::location_tracking_iterator::LocationTrackingIterator;
-use std::iter::Peekable;
 use std::str::Chars;
 
 fn main() {
@@ -38,7 +36,7 @@ fn run_prompt() -> std::io::Result<u8> {
         if input == "" {
             return Ok(0);
         }
-        run(&mut LocationTrackingIterator::new(input.chars().peekable()));
+        run(&mut LocationTrackingIterator::new(input.chars()));
     }
 }
 
@@ -47,12 +45,12 @@ fn run_file(file_name: &str) -> std::io::Result<u8> {
     let mut file = std::fs::File::open(file_name)?;
     let mut code = String::new();
     file.read_to_string(&mut code)?;
-    run(&mut LocationTrackingIterator::new(code.chars().peekable()));
+    run(&mut LocationTrackingIterator::new(code.chars()));
     Ok(0)
 }
 
 /// Runs a single line of code.
-fn run(code: &mut LocationTrackingIterator<Peekable<Chars>>) -> Option<u8> {
+fn run(code: &mut LocationTrackingIterator<Chars>) -> Option<u8> {
     let mut current = Location::start();
     loop {
         let token = scanning::scan(code, &mut current);
