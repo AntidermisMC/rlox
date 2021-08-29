@@ -446,6 +446,29 @@ mod tests {
     }
 
     #[test]
+    fn number_literal_method_call() {
+        let code = "\
+        1.square()\n\
+        -2.0.abs()\n\
+        ";
+        let expected = "\
+        [1,0]-[1,1] Number(1.0)\n\
+        [1,1]-[1,2] Dot\n\
+        [1,2]-[1,8] Identifier(\"square\")\n\
+        [1,8]-[1,9] LeftParen\n\
+        [1,9]-[1,10] RightParen\n\
+        [2,0]-[2,1] Minus\n\
+        [2,1]-[2,4] Number(2.0)\n\
+        [2,4]-[2,5] Dot\n\
+        [2,5]-[2,8] Identifier(\"abs\")\n\
+        [2,8]-[2,9] LeftParen\n\
+        [2,9]-[2,10] RightParen\n\
+        [3,0] EOF\n\
+        ";
+        assert_equals(code, expected);
+    }
+
+    #[test]
     fn identifier() {
         let code = "Bond";
         let expected = "\
