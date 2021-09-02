@@ -3,6 +3,8 @@ mod error;
 mod location;
 mod location_tracking_iterator;
 mod scanning;
+mod ast;
+
 use crate::location::Location;
 use crate::location_tracking_iterator::LocationTrackingIterator;
 use crate::scanning::token::TokenType;
