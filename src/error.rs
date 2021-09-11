@@ -1,7 +1,7 @@
 use crate::code_span::CodeSpan;
 use std::fmt::{Debug, Display, Formatter};
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone)]
 pub struct Error {
     message: String,
     location: CodeSpan,

@@ -7,6 +7,7 @@ use crate::location_tracking_iterator::LocationTrackingIterator;
 use crate::scanning::token::TokenType;
 use crate::scanning::token::TokenType::*;
 use std::str::Chars;
+pub use token::token_stream::TokenStream;
 use token::Token;
 
 /// Returns the current span and starts a new one.
@@ -235,17 +236,22 @@ pub fn scan_all(code: &str) -> Result<Vec<Token>, Error> {
 }
 
 #[cfg(test)]
+pub fn to_string(vec: Vec<Token>) -> std::string::String {
+    let mut s = std::string::String::new();
+    for token in vec {
+        s.extend(format!("{:?}", token).chars());
+        s.push('\n');
+    }
+    s
+}
+
+#[cfg(test)]
 mod tests {
     use crate::scanning::scan_all;
-    use std::string::String;
 
     fn assert_equals(to_be_parsed: &str, expected: &str) {
         let parsed = scan_all(to_be_parsed).unwrap();
-        let mut s = String::new();
-        for token in parsed {
-            s.extend(format!("{:?}", token).chars());
-            s.push('\n');
-        }
+        let s = super::to_string(parsed);
         assert_eq!(s, expected);
     }
 

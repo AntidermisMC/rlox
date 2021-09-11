@@ -1,7 +1,8 @@
+pub mod token_stream;
 use crate::code_span::CodeSpan;
 use std::fmt::{Debug, Display, Formatter};
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 /// Represents the type of a token.
 pub enum TokenType {
     LeftParen,
@@ -50,7 +51,7 @@ pub enum TokenType {
 }
 
 /// Represents a token along with its location in the source code.
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone)]
 pub struct Token {
     token: TokenType,
     span: CodeSpan,
