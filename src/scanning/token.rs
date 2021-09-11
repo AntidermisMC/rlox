@@ -1,5 +1,5 @@
 use crate::code_span::CodeSpan;
-use std::fmt::{Display, Formatter, Debug};
+use std::fmt::{Debug, Display, Formatter};
 
 #[derive(Debug, PartialEq)]
 /// Represents the type of a token.

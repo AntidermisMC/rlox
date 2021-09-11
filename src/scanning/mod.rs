@@ -52,7 +52,7 @@ fn extend_with_digits(source: &mut LocationTrackingIterator<Chars>, s: &mut std:
 pub fn scan(
     source: &mut LocationTrackingIterator<Chars>,
     start: &mut Location,
-) -> Result<Token, Error> {
+) -> Option<Token> {
     while let Some(char) = source.next() {
         return match char {
             // Comments
@@ -63,7 +63,7 @@ pub fn scan(
                         *start = source.get_location();
                         break;
                     } else if next == None {
-                        return Ok(Token::new(
+                        return Some(Token::new(
                             EOF,
                             consume_span(&mut source.get_location(), source.get_location()),
                         ));
@@ -73,56 +73,56 @@ pub fn scan(
             }
 
             // Simple operators
-            '(' => Ok(Token::new(
+            '(' => Some(Token::new(
                 LeftParen,
                 consume_span(start, source.get_location()),
             )),
-            ')' => Ok(Token::new(
+            ')' => Some(Token::new(
                 RightParen,
                 consume_span(start, source.get_location()),
             )),
-            '{' => Ok(Token::new(
+            '{' => Some(Token::new(
                 LeftBrace,
                 consume_span(start, source.get_location()),
             )),
-            '}' => Ok(Token::new(
+            '}' => Some(Token::new(
                 RightBrace,
                 consume_span(start, source.get_location()),
             )),
-            ',' => Ok(Token::new(
+            ',' => Some(Token::new(
                 Comma,
                 consume_span(start, source.get_location()),
             )),
-            '.' => Ok(Token::new(Dot, consume_span(start, source.get_location()))),
-            '-' => Ok(Token::new(
+            '.' => Some(Token::new(Dot, consume_span(start, source.get_location()))),
+            '-' => Some(Token::new(
                 Minus,
                 consume_span(start, source.get_location()),
             )),
-            '+' => Ok(Token::new(Plus, consume_span(start, source.get_location()))),
-            ';' => Ok(Token::new(
+            '+' => Some(Token::new(Plus, consume_span(start, source.get_location()))),
+            ';' => Some(Token::new(
                 Semicolon,
                 consume_span(start, source.get_location()),
             )),
-            '*' => Ok(Token::new(Star, consume_span(start, source.get_location()))),
-            '/' => Ok(Token::new(
+            '*' => Some(Token::new(Star, consume_span(start, source.get_location()))),
+            '/' => Some(Token::new(
                 Slash,
                 consume_span(start, source.get_location()),
             )),
 
             // Composite operators
-            '!' => Ok(Token::new(
+            '!' => Some(Token::new(
                 delimit_operator(source, Bang, BangEqual),
                 consume_span(start, source.get_location()),
             )),
-            '=' => Ok(Token::new(
+            '=' => Some(Token::new(
                 delimit_operator(source, Equal, EqualEqual),
                 consume_span(start, source.get_location()),
             )),
-            '<' => Ok(Token::new(
+            '<' => Some(Token::new(
                 delimit_operator(source, Less, LessEqual),
                 consume_span(start, source.get_location()),
             )),
-            '>' => Ok(Token::new(
+            '>' => Some(Token::new(
                 delimit_operator(source, Greater, GreaterEqual),
                 consume_span(start, source.get_location()),
             )),
@@ -145,14 +145,14 @@ pub fn scan(
                         str.push(c);
                     } else {
                         let span = consume_span(start, source.get_location());
-                        return Ok(Token::new(
+                        return Some(Token::new(
                             Invalid(Error::new("Unterminated string".to_string(), span)),
                             span,
                         ));
                     }
                 }
                 source.next();
-                Ok(Token::new(
+                Some(Token::new(
                     TokenType::String(str),
                     consume_span(start, source.get_location()),
                 ))
@@ -171,7 +171,7 @@ pub fn scan(
                         }
                     }
                 }
-                Ok(Token::new(
+                Some(Token::new(
                     Number(str.parse::<f64>().unwrap()),
                     consume_span(start, source.get_location()),
                 ))
@@ -189,7 +189,7 @@ pub fn scan(
                         _ => break,
                     }
                 }
-                Ok(Token::new(
+                Some(Token::new(
                     match str.as_str() {
                         "and" => And,
                         "class" => Class,
@@ -214,7 +214,7 @@ pub fn scan(
             }
 
             // Errors
-            c => Ok(Token::new(
+            c => Some(Token::new(
                 Invalid(Error::new(
                     format!("Invalid character '{}'", c),
                     CodeSpan::new(Location::new(start.line, start.char), source.get_location()),
@@ -223,7 +223,7 @@ pub fn scan(
             )),
         };
     }
-    return Ok(Token::new(
+    return Some(Token::new(
         TokenType::EOF,
         consume_span(start, source.get_location()),
     ));
@@ -234,16 +234,11 @@ pub fn scan_all(code: &str) -> Result<Vec<Token>, Error> {
     let mut source = LocationTrackingIterator::new(code.chars());
     let mut vec = Vec::new();
     let mut loc = Location::start();
-    loop {
-        match scan(&mut source, &mut loc) {
-            Ok(token) => {
-                let is_eof = token.is_of_type(TokenType::EOF);
-                vec.push(token);
-                if is_eof {
-                    break;
-                }
-            }
-            Err(e) => return Err(e),
+    while let Some(token) = scan(&mut source, &mut loc) {
+        let is_eof = token.is_of_type(TokenType::EOF);
+        vec.push(token);
+        if is_eof {
+            break;
         }
     }
     Ok(vec)

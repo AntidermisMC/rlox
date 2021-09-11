@@ -1,9 +1,9 @@
+mod ast;
 mod code_span;
 mod error;
 mod location;
 mod location_tracking_iterator;
 mod scanning;
-mod ast;
 
 use crate::location::Location;
 use crate::location_tracking_iterator::LocationTrackingIterator;
@@ -56,14 +56,14 @@ fn run(code: &mut LocationTrackingIterator<Chars>) -> Option<u8> {
     let mut current = Location::start();
     loop {
         let token = scanning::scan(code, &mut current);
-        match token {
-            Ok(token) => {
-                println!("{}", token);
-                if token.is_of_type(TokenType::EOF) {
-                    break;
-                }
+        if let Some(token) = token {
+            println!("{}", token);
+            if token.is_of_type(TokenType::EOF) {
+                break;
             }
-            Err(err) => eprintln!("{}", err),
+        }
+        else {
+            break;
         }
     }
     None
