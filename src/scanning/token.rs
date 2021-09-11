@@ -46,7 +46,6 @@ pub enum TokenType {
     Var,
     While,
 
-    EOF,
     Invalid(crate::error::Error),
 }
 

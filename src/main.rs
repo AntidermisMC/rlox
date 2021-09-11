@@ -3,11 +3,11 @@ mod code_span;
 mod error;
 mod location;
 mod location_tracking_iterator;
+mod parsing;
 mod scanning;
 
 use crate::location::Location;
 use crate::location_tracking_iterator::LocationTrackingIterator;
-use crate::scanning::token::TokenType;
 use std::env;
 use std::io::{Read, Write};
 use std::str::Chars;
@@ -58,9 +58,6 @@ fn run(code: &mut LocationTrackingIterator<Chars>) -> Option<u8> {
         let token = scanning::scan(code, &mut current);
         if let Some(token) = token {
             println!("{}", token);
-            if token.is_of_type(TokenType::EOF) {
-                break;
-            }
         }
         else {
             break;

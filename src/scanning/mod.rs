@@ -63,10 +63,7 @@ pub fn scan(
                         *start = source.get_location();
                         break;
                     } else if next == None {
-                        return Some(Token::new(
-                            EOF,
-                            consume_span(&mut source.get_location(), source.get_location()),
-                        ));
+                        return None;
                     }
                 }
                 continue;
@@ -223,10 +220,7 @@ pub fn scan(
             )),
         };
     }
-    return Some(Token::new(
-        TokenType::EOF,
-        consume_span(start, source.get_location()),
-    ));
+    return None;
 }
 
 /// Scans every token in the given source and returns either the first error or a vector of all scanner tokens.
@@ -235,11 +229,7 @@ pub fn scan_all(code: &str) -> Result<Vec<Token>, Error> {
     let mut vec = Vec::new();
     let mut loc = Location::start();
     while let Some(token) = scan(&mut source, &mut loc) {
-        let is_eof = token.is_of_type(TokenType::EOF);
         vec.push(token);
-        if is_eof {
-            break;
-        }
     }
     Ok(vec)
 }
@@ -262,7 +252,7 @@ mod tests {
     #[test]
     fn empty() {
         let code = "";
-        let expected = "[1,0] EOF\n";
+        let expected = "";
         assert_equals(code, expected);
     }
 
@@ -271,7 +261,6 @@ mod tests {
         let code = "+";
         let expected = "\
         [1,0]-[1,1] Plus\n\
-        [1,1] EOF\n\
         ";
         assert_equals(code, expected);
     }
@@ -281,7 +270,6 @@ mod tests {
         let code = "!=";
         let expected = "\
         [1,0]-[1,2] BangEqual\n\
-        [1,2] EOF\n\
         ";
         assert_equals(code, expected);
     }
@@ -291,7 +279,7 @@ mod tests {
         let code = "!==";
         let expected = "[1,0]-[1,2] BangEqual\n\
         [1,2]-[1,3] Equal\n\
-        [1,3] EOF\n";
+        ";
         assert_equals(code, expected);
     }
 
@@ -318,7 +306,6 @@ mod tests {
         [1,18]-[1,20] LessEqual\n\
         [1,20]-[1,21] Greater\n\
         [1,21]-[1,23] GreaterEqual\n\
-        [1,23] EOF\n\
         ";
         assert_equals(code, expected);
     }
@@ -326,7 +313,7 @@ mod tests {
     #[test]
     fn only_whitespace() {
         let code = "\t \n";
-        let expected = "[2,0] EOF\n";
+        let expected = "";
         assert_equals(code, expected);
     }
 
@@ -338,7 +325,6 @@ mod tests {
         [1,2]-[1,3] Equal\n\
         [2,0]-[2,1] Equal\n\
         [2,2]-[2,3] Equal\n\
-        [2,3] EOF\n\
         ";
         assert_equals(code, expected);
     }
@@ -347,7 +333,6 @@ mod tests {
     fn only_comment() {
         let code = "// This is but a comment";
         let expected = "\
-        [1,24] EOF\n\
         ";
         assert_equals(code, expected);
     }
@@ -361,7 +346,6 @@ mod tests {
         let expected = "\
         [1,0]-[1,1] LeftParen\n\
         [2,0]-[2,1] RightParen\n\
-        [2,1] EOF\n\
         ";
         assert_equals(code, expected);
     }
@@ -371,7 +355,6 @@ mod tests {
         let code = r#""a string""#;
         let expected = "\
         [1,0]-[1,10] String(\"a string\")\n\
-        [1,10] EOF\n\
         ";
         assert_equals(code, expected);
     }
@@ -381,7 +364,6 @@ mod tests {
         let code = r#""""#;
         let expected = "\
         [1,0]-[1,2] String(\"\")\n\
-        [1,2] EOF\n\
         ";
         assert_equals(code, expected);
     }
@@ -392,7 +374,6 @@ mod tests {
         let expected = "\
         [1,0]-[1,2] String(\"\")\n\
         [1,2]-[1,3] Plus\n\
-        [1,3] EOF\n\
         ";
         assert_equals(code, expected);
     }
@@ -402,7 +383,6 @@ mod tests {
         let code = r#""i swear i am compl"#;
         let expected = "\
         [1,0]-[1,19] Invalid([1,0]-[1,19] error: Unterminated string)\n\
-        [1,19] EOF\n\
         ";
         assert_equals(code, expected);
     }
@@ -412,7 +392,6 @@ mod tests {
         let code = "0";
         let expected = "\
         [1,0]-[1,1] Number(0.0)\n\
-        [1,1] EOF\n\
         ";
         assert_equals(code, expected);
     }
@@ -422,7 +401,6 @@ mod tests {
         let code = "1.0";
         let expected = "\
         [1,0]-[1,3] Number(1.0)\n\
-        [1,3] EOF\n\
         ";
         assert_equals(code, expected);
     }
@@ -435,7 +413,6 @@ mod tests {
         [1,1]-[1,2] Number(1.0)\n\
         [1,3]-[1,4] Number(1.0)\n\
         [1,4]-[1,5] Dot\n\
-        [1,5] EOF\n\
         ";
         assert_equals(code, expected);
     }
@@ -458,7 +435,6 @@ mod tests {
         [2,5]-[2,8] Identifier(\"abs\")\n\
         [2,8]-[2,9] LeftParen\n\
         [2,9]-[2,10] RightParen\n\
-        [3,0] EOF\n\
         ";
         assert_equals(code, expected);
     }
@@ -468,7 +444,6 @@ mod tests {
         let code = "Bond";
         let expected = "\
         [1,0]-[1,4] Identifier(\"Bond\")\n\
-        [1,4] EOF\n\
         ";
         assert_equals(code, expected);
     }
@@ -487,7 +462,6 @@ mod tests {
         [2,5]-[2,9] Identifier(\"_007\")\n\
         [3,0]-[3,1] Identifier(\"b\")\n\
         [3,2]-[3,3] Identifier(\"_\")\n\
-        [3,3] EOF\n\
         ";
         assert_equals(code, expected);
     }
@@ -497,7 +471,6 @@ mod tests {
         let code = "if";
         let expected = "\
         [1,0]-[1,2] If\n\
-        [1,2] EOF\n\
         ";
         assert_equals(code, expected);
     }
@@ -507,7 +480,6 @@ mod tests {
         let code = "ifor";
         let expected = "\
         [1,0]-[1,4] Identifier(\"ifor\")\n\
-        [1,4] EOF\n\
         ";
         assert_equals(code, expected);
     }
@@ -548,7 +520,6 @@ mod tests {
         [14,0]-[14,4] True\n\
         [15,0]-[15,3] Var\n\
         [16,0]-[16,5] While\n\
-        [17,0] EOF\n\
         ";
         assert_equals(code, expected);
     }
