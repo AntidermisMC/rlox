@@ -3,7 +3,6 @@ mod code_span;
 mod error;
 mod location;
 mod location_tracking_iterator;
-mod parsing;
 mod scanning;
 
 use crate::location::Location;

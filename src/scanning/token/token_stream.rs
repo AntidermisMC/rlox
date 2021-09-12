@@ -38,10 +38,11 @@ impl<'a> TokenStream<'a> {
         }
     }
 
-    fn next_token(&mut self) -> Option<<Self as Iterator>::Item> {
+    fn parse_next_token(&mut self) -> Option<<Self as Iterator>::Item> {
         if let Some(token) = scan(&mut self.it, &mut self.loc) {
+            let clone = token.clone();
             self.vec.push(token);
-            Some(self.vec.last().unwrap().clone()) // Last should NEVER return None
+            Some(clone) // Last should NEVER return None
         } else {
             None
         }
@@ -52,6 +53,12 @@ impl<'a> TokenStream<'a> {
             assert!(n < self.vec.len());
         }
         self.pos = pos;
+    }
+
+    pub fn peek(&mut self) -> Option<<Self as Iterator>::Item> {
+        let item = self.next();
+        self.back();
+        item
     }
 }
 
@@ -71,7 +78,7 @@ impl<'a> Iterator for TokenStream<'a> {
             Some(val)
         }
         else {
-            self.next_token()
+            self.parse_next_token()
         }
     }
 }
@@ -134,6 +141,27 @@ mod tests {
         token_stream.back();
         vec.extend(token_stream);
         assert_eq!(crate::scanning::to_string(vec), expected);
+    }
+
+    #[test]
+    fn peek() {
+        let text = "a = b + c";
+        let expected = "\
+        [1,0]-[1,1] Identifier(\"a\")\n\
+        [1,0]-[1,1] Identifier(\"a\")\n\
+        [1,0]-[1,1] Identifier(\"a\")\n\
+        ";
+        let mut token_stream = TokenStream::new(text);
+        let mut vec = vec![];
+        vec.push(token_stream.peek().unwrap());
+        vec.push(token_stream.peek().unwrap());
+        vec.push(token_stream.next().unwrap());
+        assert_eq!(crate::scanning::to_string(vec), expected);
+
+        for _ in 0..4 {
+            token_stream.next();
+        }
+        assert_eq!(token_stream.peek(), None);
     }
 
     #[test]
