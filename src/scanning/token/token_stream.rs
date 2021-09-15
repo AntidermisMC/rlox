@@ -9,6 +9,10 @@ pub enum Position {
     Index(usize),
 }
 
+pub struct TokenStreamState {
+    position: usize,
+}
+
 /// TokenStream is an iterator that returns lazily-scanned tokens and allows backtracking.
 pub struct TokenStream<'a> {
     it: LocationTrackingIterator<Chars<'a>>,
@@ -59,6 +63,23 @@ impl<'a> TokenStream<'a> {
         let item = self.next();
         self.back();
         item
+    }
+
+    pub fn save_position(&self) -> TokenStreamState {
+        let position = match self.pos {
+            Position::Index(n) => n,
+            Position::End => self.vec.len(),
+        };
+        TokenStreamState { position }
+    }
+
+    pub fn load_position(&mut self, save: TokenStreamState) {
+        if save.position == self.vec.len() {
+            self.pos = Position::End;
+        }
+        else {
+            self.pos = Position::Index(save.position);
+        }
     }
 }
 
@@ -162,6 +183,30 @@ mod tests {
             token_stream.next();
         }
         assert_eq!(token_stream.peek(), None);
+    }
+
+    #[test]
+    fn save_load() {
+        let text = "a = b + c";
+        let expected = "\
+        [1,0]-[1,1] Identifier(\"a\")\n\
+        [1,2]-[1,3] Equal\n\
+        [1,0]-[1,1] Identifier(\"a\")\n\
+        [1,2]-[1,3] Equal\n\
+        [1,4]-[1,5] Identifier(\"b\")\n\
+        [1,6]-[1,7] Plus\n\
+        [1,8]-[1,9] Identifier(\"c\")\n\
+        ";
+        let mut token_stream = TokenStream::new(text);
+        let mut vec = vec![];
+
+        let save = token_stream.save_position();
+        vec.push(token_stream.next().unwrap());
+        vec.push(token_stream.next().unwrap());
+        token_stream.load_position(save);
+        vec.extend(token_stream);
+
+        assert_eq!(crate::scanning::to_string(vec), expected);
     }
 
     #[test]
