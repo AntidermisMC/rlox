@@ -69,6 +69,14 @@ impl Token {
     pub fn is_of_type(&self, token_type: TokenType) -> bool {
         self.token == token_type
     }
+
+    pub fn get_type(&self) -> &TokenType {
+        &self.token
+    }
+
+    pub fn get_span(&self) -> CodeSpan {
+        self.span
+    }
 }
 
 impl Display for Token {

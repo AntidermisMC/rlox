@@ -1,8 +1,8 @@
 use crate::location::Location;
 use crate::location_tracking_iterator::LocationTrackingIterator;
-use std::str::Chars;
+use crate::scanning::token::token_stream::Position::{End, Index};
 use crate::scanning::{scan, Token};
-use crate::scanning::token::token_stream::Position::{Index, End};
+use std::str::Chars;
 
 pub enum Position {
     End,
@@ -31,17 +31,18 @@ impl<'a> TokenStream<'a> {
         }
     }
 
+    /// Goes back one iteration
     pub fn back(&mut self) {
         if let Position::Index(n) = self.pos {
             assert_ne!(n, 0);
             self.pos = Index(n - 1);
-        }
-        else {
+        } else {
             assert_ne!(self.vec.len(), 0);
             self.pos = Index(self.vec.len() - 1);
         }
     }
 
+    /// Internal. Immediately scan next token from source
     fn parse_next_token(&mut self) -> Option<<Self as Iterator>::Item> {
         if let Some(token) = scan(&mut self.it, &mut self.loc) {
             let clone = token.clone();
@@ -76,9 +77,15 @@ impl<'a> TokenStream<'a> {
     pub fn load_position(&mut self, save: TokenStreamState) {
         if save.position == self.vec.len() {
             self.pos = Position::End;
-        }
-        else {
+        } else {
             self.pos = Position::Index(save.position);
+        }
+    }
+
+    pub fn current_position(&self) -> Location {
+        match self.vec.last() {
+            None => Location::start(),
+            Some(token) => token.span.end,
         }
     }
 }
@@ -92,13 +99,11 @@ impl<'a> Iterator for TokenStream<'a> {
 
             self.pos = if self.vec.len() == n + 1 {
                 End
-            }
-            else {
+            } else {
                 Index(n + 1)
             };
             Some(val)
-        }
-        else {
+        } else {
             self.parse_next_token()
         }
     }
@@ -106,18 +111,15 @@ impl<'a> Iterator for TokenStream<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::scanning::{TokenStream, Token, scan_all};
     use crate::scanning::token::token_stream::Position::Index;
+    use crate::scanning::{scan_all, Token, TokenStream};
 
     #[test]
     fn next() {
         let text = "a = b + c";
         let token_stream = TokenStream::new(text);
         let vec = scan_all(text);
-        assert_eq!(
-            token_stream.collect::<Vec<Token>>(),
-            vec.unwrap()
-        )
+        assert_eq!(token_stream.collect::<Vec<Token>>(), vec.unwrap())
     }
 
     #[test]

@@ -1,3 +1,5 @@
+mod conversions;
+
 use std::fmt::{Display, Formatter};
 
 pub enum Expression {
@@ -43,40 +45,106 @@ pub enum BinaryOperator {
     Division,
 }
 
+// ########## Priorities
+
+pub trait Priority {
+    fn priority(&self) -> u8;
+}
+
+impl Priority for BinaryOperator {
+    fn priority(&self) -> u8 {
+        match self {
+            BinaryOperator::Equality => 0,
+            BinaryOperator::Inequality => 0,
+            BinaryOperator::StrictInferiority => 1,
+            BinaryOperator::Inferiority => 1,
+            BinaryOperator::StrictSuperiority => 1,
+            BinaryOperator::Superiority => 1,
+            BinaryOperator::Addition => 2,
+            BinaryOperator::Subtraction => 2,
+            BinaryOperator::Multiplication => 3,
+            BinaryOperator::Division => 3,
+        }
+    }
+}
+
+impl Priority for Binary {
+    fn priority(&self) -> u8 {
+        self.operator.priority()
+    }
+}
+
+impl Priority for UnaryOperator {
+    fn priority(&self) -> u8 {
+        4
+    }
+}
+
+impl Priority for Unary {
+    fn priority(&self) -> u8 {
+        self.op.priority()
+    }
+}
+
+impl Priority for Literal {
+    fn priority(&self) -> u8 {
+        5
+    }
+}
+
+impl Priority for Expression {
+    fn priority(&self) -> u8 {
+        match self {
+            Expression::Literal(l) => l.priority(),
+            Expression::UnaryOperation(u) => u.priority(),
+            Expression::BinaryOperation(b) => b.operator.priority(),
+        }
+    }
+}
+
 // ########## Visitor stuff
 
 pub trait AstNode {
-    fn accept(&self, visitor: impl AstVisitor);
+    fn accept<T: AstVisitor>(&self, visitor: &T) -> T::Return;
 }
 
-pub trait AstVisitor {
-    fn visit_expr(&self, expr: &Expression);
-    fn visit_literal(&self, literal: &Literal);
-    fn visit_unary(&self, unary: &Unary);
-    fn visit_binary(&self, binary: &Binary);
+pub trait AstVisitor: Sized {
+    type Return;
+
+    fn visit_expr(&self, expr: &Expression) -> Self::Return {
+        match expr {
+            Expression::Literal(l) => l.accept(self),
+            Expression::UnaryOperation(u) => u.accept(self),
+            Expression::BinaryOperation(b) => b.accept(self),
+        }
+    }
+
+    fn visit_literal(&self, literal: &Literal) -> Self::Return;
+    fn visit_unary(&self, unary: &Unary) -> Self::Return;
+    fn visit_binary(&self, binary: &Binary) -> Self::Return;
 }
 
 impl AstNode for Expression {
-    fn accept(&self, visitor: impl AstVisitor) {
-        visitor.visit_expr(self);
+    fn accept<T: AstVisitor>(&self, visitor: &T) -> T::Return {
+        visitor.visit_expr(self)
     }
 }
 
 impl AstNode for Literal {
-    fn accept(&self, visitor: impl AstVisitor) {
-        visitor.visit_literal(self);
+    fn accept<T: AstVisitor>(&self, visitor: &T) -> T::Return {
+        visitor.visit_literal(self)
     }
 }
 
 impl AstNode for Unary {
-    fn accept(&self, visitor: impl AstVisitor) {
-        visitor.visit_unary(self);
+    fn accept<T: AstVisitor>(&self, visitor: &T) -> T::Return {
+        visitor.visit_unary(self)
     }
 }
 
 impl AstNode for Binary {
-    fn accept(&self, visitor: impl AstVisitor) {
-        visitor.visit_binary(self);
+    fn accept<T: AstVisitor>(&self, visitor: &T) -> T::Return {
+        visitor.visit_binary(self)
     }
 }
 
@@ -112,13 +180,29 @@ impl Display for BinaryOperator {
 
 impl Display for Unary {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}{}", self.op, self.expr)
+        let expr = if self.priority() > self.expr.priority() {
+            format!("({})", self.expr)
+        } else {
+            self.expr.to_string()
+        };
+        write!(f, "{}{}", self.op, expr)
     }
 }
 
 impl Display for Binary {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} {} {}", self.left, self.operator, self.right)
+        let left = if self.priority() > self.left.priority() {
+            format!("({})", self.left)
+        } else {
+            self.left.to_string()
+        };
+        let right = if self.priority() >= self.right.priority() {
+            format!("({})", self.right)
+        } else {
+            self.right.to_string()
+        };
+
+        write!(f, "{} {} {}", left, self.operator, right)
     }
 }
 

@@ -3,6 +3,7 @@ mod code_span;
 mod error;
 mod location;
 mod location_tracking_iterator;
+mod parsing;
 mod scanning;
 
 use crate::location::Location;
@@ -57,8 +58,7 @@ fn run(code: &mut LocationTrackingIterator<Chars>) -> Option<u8> {
         let token = scanning::scan(code, &mut current);
         if let Some(token) = token {
             println!("{}", token);
-        }
-        else {
+        } else {
             break;
         }
     }

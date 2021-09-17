@@ -4,11 +4,11 @@ use crate::code_span::CodeSpan;
 use crate::error::Error;
 use crate::location::Location;
 use crate::location_tracking_iterator::LocationTrackingIterator;
-use crate::scanning::token::TokenType;
 use crate::scanning::token::TokenType::*;
 use std::str::Chars;
 pub use token::token_stream::TokenStream;
-use token::Token;
+pub use token::Token;
+pub use token::TokenType;
 
 /// Returns the current span and starts a new one.
 fn consume_span(start: &mut Location, end: Location) -> CodeSpan {
@@ -50,10 +50,7 @@ fn extend_with_digits(source: &mut LocationTrackingIterator<Chars>, s: &mut std:
 
 /// Scans a text stream.
 /// start should be Location::start() unless resuming from a previous iterator's text.
-pub fn scan(
-    source: &mut LocationTrackingIterator<Chars>,
-    start: &mut Location,
-) -> Option<Token> {
+pub fn scan(source: &mut LocationTrackingIterator<Chars>, start: &mut Location) -> Option<Token> {
     while let Some(char) = source.next() {
         return match char {
             // Comments
