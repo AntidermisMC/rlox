@@ -128,13 +128,14 @@ fn parse_unary(tokens: &mut TokenStream) -> Result<Expression, Error> {
 
 fn parse_primary(tokens: &mut TokenStream) -> Result<Expression, Error> {
     if let Some(token) = tokens.next() {
-        match token.get_type() {
+        let span = token.get_span();
+        match token.consume() {
             TokenType::False => Ok(Literal(False)),
             TokenType::True => Ok(Literal(True)),
             TokenType::Nil => Ok(Literal(Nil)),
 
-            TokenType::Number(n) => Ok(Literal(NumberLiteral(*n))),
-            TokenType::String(s) => Ok(Literal(StringLiteral(s.to_string()))), // TODO remove cloning
+            TokenType::Number(n) => Ok(Literal(NumberLiteral(n))),
+            TokenType::String(s) => Ok(Literal(StringLiteral(s))),
 
             TokenType::LeftParen => {
                 let expr = parse_expression(tokens)?;
@@ -145,7 +146,7 @@ fn parse_primary(tokens: &mut TokenStream) -> Result<Expression, Error> {
                 }
             }
 
-            _ => Err(Error::new("unexpected token".to_string(), token.get_span())), // TODO better error handling
+            _ => Err(Error::new("unexpected token".to_string(), span)), // TODO better error handling
         }
     } else {
         Err(Error::unexpected_end_of_file(tokens.current_position()))

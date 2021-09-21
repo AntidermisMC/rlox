@@ -77,6 +77,10 @@ impl Token {
     pub fn get_span(&self) -> CodeSpan {
         self.span
     }
+
+    pub fn consume(self) -> TokenType {
+        self.token
+    }
 }
 
 impl Display for Token {
