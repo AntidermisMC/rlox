@@ -119,7 +119,7 @@ mod tests {
         let text = "a = b + c";
         let token_stream = TokenStream::new(text);
         let vec = scan_all(text);
-        assert_eq!(token_stream.collect::<Vec<Token>>(), vec.unwrap())
+        assert_eq!(token_stream.collect::<Vec<Token>>(), vec)
     }
 
     #[test]

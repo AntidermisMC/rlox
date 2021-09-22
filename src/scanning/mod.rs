@@ -1,10 +1,11 @@
+mod scanning_error;
 pub mod token;
 
 use crate::code_span::CodeSpan;
-use crate::error::Error;
 use crate::location::Location;
 use crate::location_tracking_iterator::LocationTrackingIterator;
 use crate::scanning::token::TokenType::*;
+pub use scanning_error::ScanningError;
 use std::str::Chars;
 pub use token::token_stream::TokenStream;
 pub use token::Token;
@@ -141,7 +142,7 @@ pub fn scan(source: &mut LocationTrackingIterator<Chars>, start: &mut Location) 
                     } else {
                         let span = consume_span(start, source.get_location());
                         return Some(Token::new(
-                            Invalid(Error::new("Unterminated string".to_string(), span)),
+                            Invalid(ScanningError::UnterminatedString(span)),
                             span,
                         ));
                     }
@@ -210,8 +211,8 @@ pub fn scan(source: &mut LocationTrackingIterator<Chars>, start: &mut Location) 
 
             // Errors
             c => Some(Token::new(
-                Invalid(Error::new(
-                    format!("Invalid character '{}'", c),
+                Invalid(ScanningError::InvalidCharacter(
+                    c,
                     CodeSpan::new(Location::new(start.line, start.char), source.get_location()),
                 )),
                 CodeSpan::new(Location::new(start.line, start.char), source.get_location()),
@@ -222,14 +223,15 @@ pub fn scan(source: &mut LocationTrackingIterator<Chars>, start: &mut Location) 
 }
 
 /// Scans every token in the given source and returns either the first error or a vector of all scanner tokens.
-pub fn scan_all(code: &str) -> Result<Vec<Token>, Error> {
+#[cfg(test)]
+pub fn scan_all(code: &str) -> Vec<Token> {
     let mut source = LocationTrackingIterator::new(code.chars());
     let mut vec = Vec::new();
     let mut loc = Location::start();
     while let Some(token) = scan(&mut source, &mut loc) {
         vec.push(token);
     }
-    Ok(vec)
+    vec
 }
 
 #[cfg(test)]
@@ -247,7 +249,7 @@ mod tests {
     use crate::scanning::scan_all;
 
     fn assert_equals(to_be_parsed: &str, expected: &str) {
-        let parsed = scan_all(to_be_parsed).unwrap();
+        let parsed = scan_all(to_be_parsed);
         let s = super::to_string(parsed);
         assert_eq!(s, expected);
     }
@@ -385,7 +387,7 @@ mod tests {
     fn unterminated_string() {
         let code = r#""i swear i am compl"#;
         let expected = "\
-        [1,0]-[1,19] Invalid([1,0]-[1,19] error: Unterminated string)\n\
+        [1,0]-[1,19] Invalid(UnterminatedString([1,0]-[1,19]))\n\
         ";
         assert_equals(code, expected);
     }

@@ -47,7 +47,7 @@ pub enum TokenType {
     Var,
     While,
 
-    Invalid(crate::error::Error),
+    Invalid(super::ScanningError),
 }
 
 /// Represents a token along with its location in the source code.
