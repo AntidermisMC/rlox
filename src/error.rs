@@ -1,5 +1,4 @@
 use crate::code_span::CodeSpan;
-use crate::location::Location;
 use std::fmt::{Debug, Display, Formatter};
 
 #[derive(PartialEq, Clone)]
@@ -13,12 +12,6 @@ impl Error {
         Error { message, location }
     }
 
-    pub fn unexpected_end_of_file(position: Location) -> Self {
-        Error::new(
-            "Unexpected EOF".to_string(),
-            CodeSpan::new(position, position),
-        )
-    }
 }
 
 impl Display for Error {

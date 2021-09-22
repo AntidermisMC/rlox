@@ -1,12 +1,16 @@
+mod parsing_error;
+
+pub use parsing_error::ParsingError;
 use crate::ast::Expression::*;
 use crate::ast::Literal::{False, Nil, NumberLiteral, StringLiteral, True};
 use crate::ast::{Binary, BinaryOperator, Expression, Unary, UnaryOperator};
-use crate::error::Error;
-use crate::scanning::TokenStream;
+use crate::scanning::{TokenStream, Token};
 use crate::scanning::TokenType;
 use std::convert::TryFrom;
 
-fn parse_expression(tokens: &mut TokenStream) -> Result<Expression, Error> {
+type Result<T> = std::result::Result<T, ParsingError>;
+
+fn parse_expression(tokens: &mut TokenStream) -> Result<Expression> {
     parse_equality(tokens)
 }
 
@@ -24,7 +28,7 @@ macro_rules! try_parse {
     }};
 }
 
-fn parse_equality(tokens: &mut TokenStream) -> Result<Expression, Error> {
+fn parse_equality(tokens: &mut TokenStream) -> Result<Expression> {
     let mut expr = try_parse!(parse_comparison, tokens)?;
 
     while let Some(op) = tokens.peek() {
@@ -44,7 +48,7 @@ fn parse_equality(tokens: &mut TokenStream) -> Result<Expression, Error> {
     Ok(expr)
 }
 
-fn parse_comparison(tokens: &mut TokenStream) -> Result<Expression, Error> {
+fn parse_comparison(tokens: &mut TokenStream) -> Result<Expression> {
     let mut expr = try_parse!(parse_term, tokens)?;
 
     while let Some(op) = tokens.peek() {
@@ -56,7 +60,7 @@ fn parse_comparison(tokens: &mut TokenStream) -> Result<Expression, Error> {
             tokens.next();
             let right = parse_term(tokens)?;
             expr = BinaryOperation(Binary {
-                operator: BinaryOperator::try_from(&op)?,
+                operator: BinaryOperator::try_from(&op).unwrap(),
                 left: Box::new(expr),
                 right: Box::new(right),
             });
@@ -68,7 +72,7 @@ fn parse_comparison(tokens: &mut TokenStream) -> Result<Expression, Error> {
     Ok(expr)
 }
 
-fn parse_term(tokens: &mut TokenStream) -> Result<Expression, Error> {
+fn parse_term(tokens: &mut TokenStream) -> Result<Expression> {
     let mut expr = parse_factor(tokens)?;
 
     while let Some(op) = tokens.peek() {
@@ -88,7 +92,7 @@ fn parse_term(tokens: &mut TokenStream) -> Result<Expression, Error> {
     Ok(expr)
 }
 
-fn parse_factor(tokens: &mut TokenStream) -> Result<Expression, Error> {
+fn parse_factor(tokens: &mut TokenStream) -> Result<Expression> {
     let mut expr = parse_unary(tokens)?;
 
     while let Some(op) = tokens.peek() {
@@ -108,9 +112,9 @@ fn parse_factor(tokens: &mut TokenStream) -> Result<Expression, Error> {
     Ok(expr)
 }
 
-fn parse_unary(tokens: &mut TokenStream) -> Result<Expression, Error> {
+fn parse_unary(tokens: &mut TokenStream) -> Result<Expression> {
     match tokens.next() {
-        None => Err(Error::unexpected_end_of_file(tokens.current_position())),
+        None => Err(ParsingError::UnexpectedEndOfTokenStream(tokens.current_position())),
         Some(tok) => {
             if tok.is_of_type(TokenType::Bang) || tok.is_of_type(TokenType::Minus) {
                 let expr = parse_unary(tokens)?;
@@ -126,7 +130,7 @@ fn parse_unary(tokens: &mut TokenStream) -> Result<Expression, Error> {
     }
 }
 
-fn parse_primary(tokens: &mut TokenStream) -> Result<Expression, Error> {
+fn parse_primary(tokens: &mut TokenStream) -> Result<Expression> {
     if let Some(token) = tokens.next() {
         let span = token.get_span();
         match token.consume() {
@@ -141,15 +145,15 @@ fn parse_primary(tokens: &mut TokenStream) -> Result<Expression, Error> {
                 let expr = parse_expression(tokens)?;
                 match tokens.next() {
                     Some(t) if t.is_of_type(TokenType::RightParen) => Ok(expr),
-                    Some(tok) => Err(Error::new("unexpected token".to_string(), tok.get_span())), // TODO better error handling
-                    None => Err(Error::unexpected_end_of_file(tokens.current_position())),
+                    Some(tok) => Err(ParsingError::UnexpectedToken(tok)),
+                    None => Err(ParsingError::UnexpectedEndOfTokenStream(tokens.current_position())),
                 }
             }
 
-            _ => Err(Error::new("unexpected token".to_string(), span)), // TODO better error handling
+            invalid_token => Err(ParsingError::UnexpectedToken(Token::new(invalid_token, span))),
         }
     } else {
-        Err(Error::unexpected_end_of_file(tokens.current_position()))
+        Err(ParsingError::UnexpectedEndOfTokenStream(tokens.current_position()))
     }
 }
 
@@ -159,7 +163,7 @@ mod tests {
 
     fn assert_equal_repr(
         to_be_tested: &str,
-        parsing_function: fn(&mut TokenStream) -> Result<Expression, Error>,
+        parsing_function: fn(&mut TokenStream) -> Result<Expression>,
     ) {
         assert_eq!(
             to_be_tested,
