@@ -5,12 +5,15 @@ mod location;
 mod location_tracking_iterator;
 mod parsing;
 mod scanning;
+mod eval;
 
 use crate::location::Location;
 use crate::location_tracking_iterator::LocationTrackingIterator;
 use std::env;
 use std::io::{Read, Write};
 use std::str::Chars;
+use crate::ast::AstVisitor;
+use crate::scanning::TokenStream;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -38,7 +41,7 @@ fn run_prompt() -> std::io::Result<u8> {
         if input == "" {
             return Ok(0);
         }
-        run(&mut LocationTrackingIterator::new(input.chars()));
+        run(&mut input);
     }
 }
 
@@ -47,19 +50,23 @@ fn run_file(file_name: &str) -> std::io::Result<u8> {
     let mut file = std::fs::File::open(file_name)?;
     let mut code = String::new();
     file.read_to_string(&mut code)?;
-    run(&mut LocationTrackingIterator::new(code.chars()));
+    run(&mut code);
     Ok(0)
 }
 
 /// Runs a single line of code.
-fn run(code: &mut LocationTrackingIterator<Chars>) -> Option<u8> {
+fn run(code: &mut str) -> Option<u8> {
     let mut current = Location::start();
-    loop {
-        let token = scanning::scan(code, &mut current);
-        if let Some(token) = token {
-            println!("{}", token);
-        } else {
-            break;
+    let mut tokens = TokenStream::new(code);
+    let tree = parsing::parse(&mut tokens);
+    match tree {
+        Err(e) => print!("{}", e),
+        Ok(exp) => {
+            let res = eval::Evaluator {  }.visit_expr(&exp);
+            match res {
+                Ok(val) => print!("{:?}", val),
+                Err(e) => print!("{}", e),
+            }
         }
     }
     None

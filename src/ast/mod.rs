@@ -1,6 +1,7 @@
 mod conversions;
 
 use std::fmt::{Display, Formatter};
+use crate::code_span::CodeSpan;
 
 pub enum Expression {
     Literal(Literal),
@@ -8,7 +9,12 @@ pub enum Expression {
     BinaryOperation(Binary),
 }
 
-pub enum Literal {
+pub struct Literal {
+    pub value: LiteralValue,
+    pub location: CodeSpan,
+}
+
+pub enum LiteralValue {
     StringLiteral(String),
     NumberLiteral(f64),
     True,
@@ -19,8 +25,10 @@ pub enum Literal {
 pub struct Unary {
     pub op: UnaryOperator,
     pub expr: Box<Expression>,
+    pub location: CodeSpan,
 }
 
+#[derive(Copy, Clone)]
 pub enum UnaryOperator {
     Minus,
     Not,
@@ -30,8 +38,10 @@ pub struct Binary {
     pub operator: BinaryOperator,
     pub left: Box<Expression>,
     pub right: Box<Expression>,
+    pub location: CodeSpan,
 }
 
+#[derive(Copy, Clone)]
 pub enum BinaryOperator {
     Equality,
     Inequality,
@@ -43,6 +53,22 @@ pub enum BinaryOperator {
     Subtraction,
     Multiplication,
     Division,
+}
+
+impl Expression {
+    pub fn get_location(&self) -> CodeSpan {
+        match self {
+            Expression::Literal(l) => l.location,
+            Expression::UnaryOperation(u) => u.location,
+            Expression::BinaryOperation(b) => b.location,
+        }
+    }
+}
+
+impl Literal {
+    pub fn new(value: LiteralValue, location: CodeSpan) -> Self {
+        Self { value, location }
+    }
 }
 
 // ########## Priorities
@@ -208,12 +234,12 @@ impl Display for Binary {
 
 impl Display for Literal {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        let s = match self {
-            Self::StringLiteral(s) => format!("\"{}\"", s),
-            Self::NumberLiteral(f) => format!("{}", f),
-            Self::Nil => "nil".to_string(),
-            Self::True => "true".to_string(),
-            Self::False => "false".to_string(),
+        let s = match &self.value {
+            LiteralValue::StringLiteral(s) => format!("\"{}\"", s),
+            LiteralValue::NumberLiteral(f) => format!("{}", f),
+            LiteralValue::Nil => "nil".to_string(),
+            LiteralValue::True => "true".to_string(),
+            LiteralValue::False => "false".to_string(),
         };
         write!(f, "{}", s)
     }

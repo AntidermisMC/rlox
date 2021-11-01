@@ -38,6 +38,10 @@ impl CodeSpan {
             s
         }
     }
+
+    pub fn combine(left: CodeSpan, right: CodeSpan) -> Self {
+        return CodeSpan{ start: left.start, end: right.end }
+    }
 }
 
 impl Debug for CodeSpan {

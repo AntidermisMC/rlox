@@ -1,14 +1,18 @@
 mod parsing_error;
 
 pub use parsing_error::ParsingError;
-use crate::ast::Expression::*;
-use crate::ast::Literal::{False, Nil, NumberLiteral, StringLiteral, True};
-use crate::ast::{Binary, BinaryOperator, Expression, Unary, UnaryOperator};
+use crate::ast::LiteralValue::{False, Nil, NumberLiteral, StringLiteral, True};
+use crate::ast::{Binary, BinaryOperator, Expression, Literal, Unary, UnaryOperator};
 use crate::scanning::{TokenStream, Token};
 use crate::scanning::TokenType;
 use std::convert::TryFrom;
+use crate::code_span::CodeSpan;
 
 type Result<T> = std::result::Result<T, ParsingError>;
+
+pub fn parse(tokens: &mut TokenStream) -> Result<Expression> {
+    parse_expression(tokens)
+}
 
 fn parse_expression(tokens: &mut TokenStream) -> Result<Expression> {
     parse_equality(tokens)
@@ -35,10 +39,12 @@ fn parse_equality(tokens: &mut TokenStream) -> Result<Expression> {
         if op.is_of_type(TokenType::EqualEqual) || op.is_of_type(TokenType::BangEqual) {
             tokens.next();
             let right = parse_comparison(tokens)?;
-            expr = BinaryOperation(Binary {
+            let span = CodeSpan::combine(expr.get_location(), right.get_location());
+            expr = Expression::BinaryOperation(Binary {
                 operator: BinaryOperator::try_from(&op).unwrap(),
                 left: Box::new(expr),
                 right: Box::new(right),
+                location: span,
             });
         } else {
             break;
@@ -59,10 +65,12 @@ fn parse_comparison(tokens: &mut TokenStream) -> Result<Expression> {
         {
             tokens.next();
             let right = parse_term(tokens)?;
-            expr = BinaryOperation(Binary {
+            let span = CodeSpan::combine(expr.get_location(), right.get_location());
+            expr = Expression::BinaryOperation(Binary {
                 operator: BinaryOperator::try_from(&op).unwrap(),
                 left: Box::new(expr),
                 right: Box::new(right),
+                location: span,
             });
         } else {
             break;
@@ -79,10 +87,12 @@ fn parse_term(tokens: &mut TokenStream) -> Result<Expression> {
         if op.is_of_type(TokenType::Plus) || op.is_of_type(TokenType::Minus) {
             tokens.next();
             let right = parse_factor(tokens)?;
-            expr = BinaryOperation(Binary {
+            let span = CodeSpan::combine(expr.get_location(), right.get_location());
+            expr = Expression::BinaryOperation(Binary {
                 operator: BinaryOperator::try_from(&op).unwrap(),
                 left: Box::new(expr),
                 right: Box::new(right),
+                location: span,
             });
         } else {
             break;
@@ -99,10 +109,12 @@ fn parse_factor(tokens: &mut TokenStream) -> Result<Expression> {
         if op.is_of_type(TokenType::Star) || op.is_of_type(TokenType::Slash) {
             tokens.next();
             let right = parse_unary(tokens)?;
-            expr = BinaryOperation(Binary {
+            let span = CodeSpan::combine(expr.get_location(), right.get_location());
+            expr = Expression::BinaryOperation(Binary {
                 operator: BinaryOperator::try_from(&op).unwrap(),
                 left: Box::new(expr),
                 right: Box::new(right),
+                location: span,
             })
         } else {
             break;
@@ -118,9 +130,10 @@ fn parse_unary(tokens: &mut TokenStream) -> Result<Expression> {
         Some(tok) => {
             if tok.is_of_type(TokenType::Bang) || tok.is_of_type(TokenType::Minus) {
                 let expr = parse_unary(tokens)?;
-                Ok(UnaryOperation(Unary {
+                Ok(Expression::UnaryOperation(Unary {
                     op: UnaryOperator::try_from(&tok).unwrap(),
                     expr: Box::new(expr),
+                    location: tok.get_span(),
                 }))
             } else {
                 tokens.back();
@@ -134,12 +147,12 @@ fn parse_primary(tokens: &mut TokenStream) -> Result<Expression> {
     if let Some(token) = tokens.next() {
         let span = token.get_span();
         match token.consume() {
-            TokenType::False => Ok(Literal(False)),
-            TokenType::True => Ok(Literal(True)),
-            TokenType::Nil => Ok(Literal(Nil)),
+            TokenType::False => Ok(Expression::Literal(Literal::new(False, span))),
+            TokenType::True => Ok(Expression::Literal(Literal::new(True, span))),
+            TokenType::Nil => Ok(Expression::Literal(Literal::new(Nil, span))),
 
-            TokenType::Number(n) => Ok(Literal(NumberLiteral(n))),
-            TokenType::String(s) => Ok(Literal(StringLiteral(s))),
+            TokenType::Number(n) => Ok(Expression::Literal(Literal::new(NumberLiteral(n), span))),
+            TokenType::String(s) => Ok(Expression::Literal(Literal::new(StringLiteral(s), span))),
 
             TokenType::LeftParen => {
                 let expr = parse_expression(tokens)?;
