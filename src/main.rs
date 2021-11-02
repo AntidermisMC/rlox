@@ -7,11 +7,8 @@ mod parsing;
 mod scanning;
 mod eval;
 
-use crate::location::Location;
-use crate::location_tracking_iterator::LocationTrackingIterator;
 use std::env;
 use std::io::{Read, Write};
-use std::str::Chars;
 use crate::ast::AstVisitor;
 use crate::scanning::TokenStream;
 
@@ -56,7 +53,6 @@ fn run_file(file_name: &str) -> std::io::Result<u8> {
 
 /// Runs a single line of code.
 fn run(code: &mut str) -> Option<u8> {
-    let mut current = Location::start();
     let mut tokens = TokenStream::new(code);
     let tree = parsing::parse(&mut tokens);
     match tree {

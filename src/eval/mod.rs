@@ -1,68 +1,12 @@
 mod runtime_error;
 use runtime_error::RuntimeError;
-use std::collections::{HashMap, HashSet};
-use std::error::Error;
-use std::fmt::{Display, Formatter};
+use std::collections::{HashSet};
 use crate::ast::{AstVisitor, Binary, BinaryOperator, Literal, LiteralValue, Unary, UnaryOperator};
 use crate::code_span::CodeSpan;
 use crate::eval::RuntimeError::{DivisionByZero, MismatchedTypes};
-use crate::eval::ValueType::{Boolean, Number};
 
-#[derive(PartialEq, Debug)]
-pub enum ValueType {
-    String(String),
-    Number(f64),
-    Boolean(bool),
-    Nil,
-    Object(Object),
-}
-
-#[derive(PartialEq, Debug)]
-pub struct Value {
-    location: CodeSpan,
-    value: ValueType,
-}
-
-#[derive(Eq, PartialEq, Hash, Debug)]
-pub enum Type {
-    String,
-    Number,
-    Boolean,
-    Nil,
-    Object,
-}
-
-pub type Object = HashMap<String, Value>;
-
-impl ValueType {
-    fn as_type(&self) -> Type {
-        match self {
-            ValueType::String(_) => Type::String,
-            ValueType::Number(_) => Type::Number,
-            ValueType::Boolean(_) => Type::Boolean,
-            ValueType::Nil => Type::Nil,
-            ValueType::Object(_) => Type::Object,
-        }
-    }
-}
-
-impl Value {
-    pub fn new(value: ValueType, location: CodeSpan) -> Self {
-        Self { value, location }
-    }
-}
-
-impl From<&ValueType> for Type {
-    fn from(value: &ValueType) -> Self {
-        match value {
-            ValueType::String(_) => Type::String,
-            Number(_) => Type::Number,
-            Boolean(_) => Type::Boolean,
-            ValueType::Nil => Type::Nil,
-            ValueType::Object(_) => Type::Object,
-        }
-    }
-}
+mod types;
+use types::{ValueType, Type, Value};
 
 pub struct Evaluator {}
 
@@ -169,7 +113,7 @@ fn multiplication(left: Value, right: Value, span: CodeSpan) -> Result<Value> {
 }
 
 fn division(left: Value, right: Value, span: CodeSpan) -> Result<Value> {
-    if right.value == Number(0.0) {
+    if right.value == ValueType::Number(0.0) {
         return Err(DivisionByZero(CodeSpan::combine(left.location, right.location)));
     }
     Ok(Value::new(ValueType::Number(as_number(&left)? / as_number(&right)?), span))
