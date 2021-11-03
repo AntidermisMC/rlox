@@ -211,6 +211,7 @@ mod tests {
         assert_eq!(crate::scanning::to_string(vec), expected);
     }
 
+    #[ignore] // Panic pause when running tests is annoying. TODO another day: find a better way.
     #[test]
     #[should_panic]
     fn back_from_start() {

@@ -1,12 +1,12 @@
 mod runtime_error;
-use runtime_error::RuntimeError;
-use std::collections::{HashSet};
 use crate::ast::{AstVisitor, Binary, BinaryOperator, Literal, LiteralValue, Unary, UnaryOperator};
 use crate::code_span::CodeSpan;
 use crate::eval::RuntimeError::{DivisionByZero, MismatchedTypes};
+use runtime_error::RuntimeError;
+use std::collections::HashSet;
 
 mod types;
-use types::{ValueType, Type, Value};
+use types::{Type, Value, ValueType};
 
 pub struct Evaluator {}
 
@@ -22,14 +22,22 @@ fn is_truthy(value: &ValueType) -> bool {
 fn as_number(value: &Value) -> Result<f64> {
     match value.value {
         ValueType::Number(n) => Ok(n),
-        _ => Err(MismatchedTypes(value.location, Type::Number, HashSet::from([Type::Number]))),
+        _ => Err(MismatchedTypes(
+            value.location,
+            Type::Number,
+            HashSet::from([Type::Number]),
+        )),
     }
 }
 
 fn as_string(value: &Value) -> Result<String> {
     match &value.value {
         ValueType::String(s) => Ok(s.clone()), // TODO remove cloning ?
-        t => Err(MismatchedTypes(value.location, t.as_type(), HashSet::from([Type::String])))
+        t => Err(MismatchedTypes(
+            value.location,
+            t.as_type(),
+            HashSet::from([Type::String]),
+        )),
     }
 }
 
@@ -38,7 +46,9 @@ impl AstVisitor for Evaluator {
 
     fn visit_literal(&self, literal: &Literal) -> Self::Return {
         Ok(match &literal.value {
-            LiteralValue::StringLiteral(s) => Value::new(ValueType::String(s.clone()), literal.location),
+            LiteralValue::StringLiteral(s) => {
+                Value::new(ValueType::String(s.clone()), literal.location)
+            }
             LiteralValue::NumberLiteral(n) => Value::new(ValueType::Number(*n), literal.location),
             LiteralValue::True => Value::new(ValueType::Boolean(true), literal.location),
             LiteralValue::False => Value::new(ValueType::Boolean(false), literal.location),
@@ -49,9 +59,18 @@ impl AstVisitor for Evaluator {
     fn visit_unary(&self, unary: &Unary) -> Self::Return {
         let value = self.visit_expr(unary.expr.as_ref())?;
         match (unary.op, value.value) {
-            (UnaryOperator::Minus, ValueType::Number(n)) => Ok(Value::new(ValueType::Number(-n), unary.location)),
-            (UnaryOperator::Minus, v) => Err(MismatchedTypes(unary.location, Type::from(&v), HashSet::from([Type::Number]))),
-            (UnaryOperator::Not, val) => Ok(Value::new(ValueType::Boolean(is_truthy(&val)), value.location)),
+            (UnaryOperator::Minus, ValueType::Number(n)) => {
+                Ok(Value::new(ValueType::Number(-n), unary.location))
+            }
+            (UnaryOperator::Minus, v) => Err(MismatchedTypes(
+                unary.location,
+                Type::from(&v),
+                HashSet::from([Type::Number]),
+            )),
+            (UnaryOperator::Not, val) => Ok(Value::new(
+                ValueType::Boolean(is_truthy(&val)),
+                value.location,
+            )),
         }
     }
 
@@ -78,61 +97,87 @@ fn addition(left: Value, right: Value, span: CodeSpan) -> Result<Value> {
     if let Ok(l) = as_number(&left) {
         if let Ok(r) = as_number(&right) {
             Ok(Value::new(ValueType::Number(l + r), span))
+        } else {
+            Err(MismatchedTypes(
+                right.location,
+                right.value.as_type(),
+                HashSet::from([Type::Number]),
+            ))
         }
-        else {
-            Err(MismatchedTypes(right.location, right.value.as_type(), HashSet::from([Type::Number])))
-        }
-    }
-    else if let Ok(l) = as_string(&left) {
+    } else if let Ok(l) = as_string(&left) {
         if let Ok(r) = as_string(&right) {
             let mut l = l.clone();
             l.push_str(&r);
             Ok(Value::new(ValueType::String(l), span))
-        }
-        else {
+        } else {
             Err(MismatchedTypes(
                 right.location,
                 right.value.as_type(),
-                HashSet::from([Type::String])))
+                HashSet::from([Type::String]),
+            ))
         }
-    }
-    else {
+    } else {
         Err(MismatchedTypes(
             left.location,
             left.value.as_type(),
-            HashSet::from([Type::Number, Type::String])))
+            HashSet::from([Type::Number, Type::String]),
+        ))
     }
 }
 
 fn subtraction(left: Value, right: Value, span: CodeSpan) -> Result<Value> {
-    Ok(Value::new(ValueType::Number(as_number(&left)? - as_number(&right)?), span))
+    Ok(Value::new(
+        ValueType::Number(as_number(&left)? - as_number(&right)?),
+        span,
+    ))
 }
 
 fn multiplication(left: Value, right: Value, span: CodeSpan) -> Result<Value> {
-    Ok(Value::new(ValueType::Number(as_number(&left)? * as_number(&right)?), span))
+    Ok(Value::new(
+        ValueType::Number(as_number(&left)? * as_number(&right)?),
+        span,
+    ))
 }
 
 fn division(left: Value, right: Value, span: CodeSpan) -> Result<Value> {
     if right.value == ValueType::Number(0.0) {
-        return Err(DivisionByZero(CodeSpan::combine(left.location, right.location)));
+        return Err(DivisionByZero(CodeSpan::combine(
+            left.location,
+            right.location,
+        )));
     }
-    Ok(Value::new(ValueType::Number(as_number(&left)? / as_number(&right)?), span))
+    Ok(Value::new(
+        ValueType::Number(as_number(&left)? / as_number(&right)?),
+        span,
+    ))
 }
 
 fn strict_inferiority(left: Value, right: Value, span: CodeSpan) -> Result<Value> {
-    Ok(Value::new(ValueType::Boolean(as_number(&left)? < as_number(&right)?), span))
+    Ok(Value::new(
+        ValueType::Boolean(as_number(&left)? < as_number(&right)?),
+        span,
+    ))
 }
 
 fn strict_superiority(left: Value, right: Value, span: CodeSpan) -> Result<Value> {
-    Ok(Value::new(ValueType::Boolean(as_number(&left)? > as_number(&right)?), span))
+    Ok(Value::new(
+        ValueType::Boolean(as_number(&left)? > as_number(&right)?),
+        span,
+    ))
 }
 
 fn inferiority(left: Value, right: Value, span: CodeSpan) -> Result<Value> {
-    Ok(Value::new(ValueType::Boolean(as_number(&left)? <= as_number(&right)?), span))
+    Ok(Value::new(
+        ValueType::Boolean(as_number(&left)? <= as_number(&right)?),
+        span,
+    ))
 }
 
 fn superiority(left: Value, right: Value, span: CodeSpan) -> Result<Value> {
-    Ok(Value::new(ValueType::Boolean(as_number(&left)? >= as_number(&right)?), span))
+    Ok(Value::new(
+        ValueType::Boolean(as_number(&left)? >= as_number(&right)?),
+        span,
+    ))
 }
 
 fn compare(left: &ValueType, right: &ValueType) -> bool {
@@ -154,4 +199,41 @@ fn equality(left: Value, right: Value, span: CodeSpan) -> Result<Value> {
 fn inequality(left: Value, right: Value, span: CodeSpan) -> Result<Value> {
     let val = !compare(&left.value, &right.value);
     Ok(Value::new(ValueType::Boolean(val), span))
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::ast::{AstVisitor, Expression};
+    use crate::eval::types::ValueType::Number;
+    use crate::eval::types::{ValueType, ValueType::*};
+    use crate::eval::Evaluator;
+    use crate::parsing::parse;
+    use crate::scanning::TokenStream;
+
+    fn assert_eval(code: &str, result: ValueType) {
+        let mut tokens = TokenStream::new(code);
+        let tree = parse(&mut tokens).unwrap();
+        let value = Evaluator {}.visit_expr(&tree).unwrap();
+        assert_eq!(value.value, result);
+    }
+
+    macro_rules! gen_tests {
+        ($name:ident, $({ $case:expr, $expected:expr }),*) => {
+            #[test]
+            fn $name() {
+                $(
+                assert_eval($case, $expected);
+                )*
+            }
+        };
+    }
+
+    gen_tests!(literals,
+        { "1",          Number(1.0) },
+        { "\"\"",       String("".to_string()) },
+        { "\"hello\"",  String("hello".to_string()) },
+        { "nil",        Nil },
+        { "true",       Boolean(true) },
+        { "false",      Boolean(false) }
+    );
 }
