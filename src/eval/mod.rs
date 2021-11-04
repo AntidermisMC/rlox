@@ -1,11 +1,14 @@
 mod runtime_error;
+mod types;
+
+#[cfg(test)]
+mod tests;
+
 use crate::ast::{AstVisitor, Binary, BinaryOperator, Literal, LiteralValue, Unary, UnaryOperator};
 use crate::code_span::CodeSpan;
 use crate::eval::RuntimeError::{DivisionByZero, MismatchedTypes};
 use runtime_error::RuntimeError;
 use std::collections::HashSet;
-
-mod types;
 use types::{Type, Value, ValueType};
 
 pub struct Evaluator {}
@@ -68,7 +71,7 @@ impl AstVisitor for Evaluator {
                 HashSet::from([Type::Number]),
             )),
             (UnaryOperator::Not, val) => Ok(Value::new(
-                ValueType::Boolean(is_truthy(&val)),
+                ValueType::Boolean(!is_truthy(&val)),
                 value.location,
             )),
         }
@@ -199,41 +202,4 @@ fn equality(left: Value, right: Value, span: CodeSpan) -> Result<Value> {
 fn inequality(left: Value, right: Value, span: CodeSpan) -> Result<Value> {
     let val = !compare(&left.value, &right.value);
     Ok(Value::new(ValueType::Boolean(val), span))
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::ast::{AstVisitor, Expression};
-    use crate::eval::types::ValueType::Number;
-    use crate::eval::types::{ValueType, ValueType::*};
-    use crate::eval::Evaluator;
-    use crate::parsing::parse;
-    use crate::scanning::TokenStream;
-
-    fn assert_eval(code: &str, result: ValueType) {
-        let mut tokens = TokenStream::new(code);
-        let tree = parse(&mut tokens).unwrap();
-        let value = Evaluator {}.visit_expr(&tree).unwrap();
-        assert_eq!(value.value, result);
-    }
-
-    macro_rules! gen_tests {
-        ($name:ident, $({ $case:expr, $expected:expr }),*) => {
-            #[test]
-            fn $name() {
-                $(
-                assert_eval($case, $expected);
-                )*
-            }
-        };
-    }
-
-    gen_tests!(literals,
-        { "1",          Number(1.0) },
-        { "\"\"",       String("".to_string()) },
-        { "\"hello\"",  String("hello".to_string()) },
-        { "nil",        Nil },
-        { "true",       Boolean(true) },
-        { "false",      Boolean(false) }
-    );
 }
