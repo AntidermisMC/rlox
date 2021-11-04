@@ -33,11 +33,28 @@ gen_tests!(literals,
 );
 
 gen_tests!(unary,
-    { "-3",         Number(-3.0) },
-    { "--3",        Number(3.0) },
-    { "!true",      Boolean(false) },
-    { "!false",     Boolean(true) },
-    { "!!true",     Boolean(true) },
+    { "-3",          Number(-3.0) },
+    { "--3",         Number(3.0) },
+    { "!true",       Boolean(false) },
+    { "!false",      Boolean(true) },
+    { "!!true",      Boolean(true) },
     { "!\"hello\"",  Boolean(false) },
     { "!nil",        Boolean(true) }
+);
+
+gen_tests!(string_concat,
+    { r#""" + """#,             String("".to_string()) },
+    { r#""Hello," + " World""#, String("Hello, World".to_string()) }
+);
+
+gen_tests!(arithmetic_binary_operators,
+    { "1 + 1", Number(2.0) },
+    { "1 - 1", Number(0.0) },
+    { "1 * 1", Number(1.0) },
+    { "1 / 1", Number(1.0) },
+    { "2 + 2", Number(4.0) },
+    { "2 - 2", Number(0.0) },
+    { "2 * 2", Number(4.0) },
+    { "2 / 2", Number(1.0) },
+    { "0 / 1", Number(0.0) }
 );
