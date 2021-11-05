@@ -183,7 +183,7 @@ fn superiority(left: Value, right: Value, span: CodeSpan) -> Result<Value> {
     ))
 }
 
-fn compare(left: &ValueType, right: &ValueType) -> bool {
+fn test_equality(left: &ValueType, right: &ValueType) -> bool {
     match (left, right) {
         (ValueType::Boolean(l), ValueType::Boolean(r)) => l == r,
         (ValueType::Nil, ValueType::Nil) => true,
@@ -195,11 +195,11 @@ fn compare(left: &ValueType, right: &ValueType) -> bool {
 }
 
 fn equality(left: Value, right: Value, span: CodeSpan) -> Result<Value> {
-    let val = compare(&left.value, &right.value);
+    let val = test_equality(&left.value, &right.value);
     Ok(Value::new(ValueType::Boolean(val), span))
 }
 
 fn inequality(left: Value, right: Value, span: CodeSpan) -> Result<Value> {
-    let val = !compare(&left.value, &right.value);
+    let val = !test_equality(&left.value, &right.value);
     Ok(Value::new(ValueType::Boolean(val), span))
 }

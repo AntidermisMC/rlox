@@ -24,22 +24,22 @@ macro_rules! gen_tests {
 }
 
 gen_tests!(literals,
-    { "1",          Number(1.0) },
-    { "\"\"",       String("".to_string()) },
+    { "1",          Number(1.0)                 },
+    { "\"\"",       String("".to_string())      },
     { "\"hello\"",  String("hello".to_string()) },
-    { "nil",        Nil },
-    { "true",       Boolean(true) },
-    { "false",      Boolean(false) }
+    { "nil",        Nil                         },
+    { "true",       Boolean(true)               },
+    { "false",      Boolean(false)              }
 );
 
 gen_tests!(unary,
-    { "-3",          Number(-3.0) },
-    { "--3",         Number(3.0) },
+    { "-3",          Number(-3.0)   },
+    { "--3",         Number(3.0)    },
     { "!true",       Boolean(false) },
-    { "!false",      Boolean(true) },
-    { "!!true",      Boolean(true) },
+    { "!false",      Boolean(true)  },
+    { "!!true",      Boolean(true)  },
     { "!\"hello\"",  Boolean(false) },
-    { "!nil",        Boolean(true) }
+    { "!nil",        Boolean(true)  }
 );
 
 gen_tests!(string_concat,
@@ -57,4 +57,47 @@ gen_tests!(arithmetic_binary_operators,
     { "2 * 2", Number(4.0) },
     { "2 / 2", Number(1.0) },
     { "0 / 1", Number(0.0) }
+);
+
+gen_tests!(comparison_binary_operators,
+    { "1 < 0",  Boolean(false) },
+    { "1 < 1",  Boolean(false) },
+    { "1 < 2",  Boolean(true)  },
+    { "1 <= 0", Boolean(false) },
+    { "1 <= 1", Boolean(true)  },
+    { "1 <= 2", Boolean(true)  },
+    { "1 > 0",  Boolean(true)  },
+    { "1 > 1",  Boolean(false) },
+    { "1 > 2",  Boolean(false) },
+    { "1 >= 0", Boolean(true)  },
+    { "1 >= 1", Boolean(true)  },
+    { "1 >= 2", Boolean(false) }
+);
+
+gen_tests!(equality_same_types,
+    { "1 == 1",              Boolean(true)  },
+    { "1 == 2",              Boolean(false) },
+    { "nil == nil",          Boolean(true)  },
+    { "true == true",        Boolean(true)  },
+    { "true == false",       Boolean(false) },
+    { "false == true",       Boolean(false) },
+    { "false == false",      Boolean(true)  },
+    { r#""" == """#,         Boolean(true)  },
+    { r#""hey" == "hey""#,   Boolean(true)  },
+    { r#""hey" == """#,      Boolean(false) },
+    { r#""hey" == "hello""#, Boolean(false) }
+);
+
+gen_tests!(inequality_same_types,
+    { "1 != 1",              Boolean(false) },
+    { "1 != 2",              Boolean(true)  },
+    { "nil != nil",          Boolean(false) },
+    { "true != true",        Boolean(false) },
+    { "true != false",       Boolean(true)  },
+    { "false != true",       Boolean(true)  },
+    { "false != false",      Boolean(false) },
+    { r#""" != """#,         Boolean(false) },
+    { r#""hey" != "hey""#,   Boolean(false) },
+    { r#""hey" != """#,      Boolean(true)  },
+    { r#""hey" != "hello""#, Boolean(true)  }
 );
