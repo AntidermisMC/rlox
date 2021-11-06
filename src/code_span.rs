@@ -40,7 +40,10 @@ impl CodeSpan {
     }
 
     pub fn combine(left: CodeSpan, right: CodeSpan) -> Self {
-        return CodeSpan{ start: left.start, end: right.end }
+        return CodeSpan {
+            start: left.start,
+            end: right.end,
+        };
     }
 }
 

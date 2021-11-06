@@ -11,7 +11,6 @@ impl Error {
     pub fn new(message: String, location: CodeSpan) -> Self {
         Error { message, location }
     }
-
 }
 
 impl Display for Error {

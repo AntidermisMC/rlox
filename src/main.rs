@@ -1,16 +1,16 @@
 mod ast;
 mod code_span;
 mod error;
+mod eval;
 mod location;
 mod location_tracking_iterator;
 mod parsing;
 mod scanning;
-mod eval;
 
-use std::env;
-use std::io::{Read, Write};
 use crate::ast::AstVisitor;
 use crate::scanning::TokenStream;
+use std::env;
+use std::io::{Read, Write};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -58,7 +58,7 @@ fn run(code: &mut str) -> Option<u8> {
     match tree {
         Err(e) => print!("{}", e),
         Ok(exp) => {
-            let res = eval::Evaluator {  }.visit_expr(&exp);
+            let res = eval::Evaluator {}.visit_expr(&exp);
             match res {
                 Ok(val) => print!("{:?}", val),
                 Err(e) => print!("{}", e),

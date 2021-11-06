@@ -12,7 +12,9 @@ pub enum ParsingError {
 impl Display for ParsingError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            ParsingError::UnexpectedEndOfTokenStream(loc) => write!(f, "unexpected end of token stream at {}", loc),
+            ParsingError::UnexpectedEndOfTokenStream(loc) => {
+                write!(f, "unexpected end of token stream at {}", loc)
+            }
             ParsingError::UnexpectedToken(token) => write!(f, "unexpected token: {}", token),
         }
     }

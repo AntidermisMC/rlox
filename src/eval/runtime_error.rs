@@ -1,8 +1,8 @@
+use crate::code_span::CodeSpan;
+use crate::eval::Type;
 use std::collections::HashSet;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
-use crate::code_span::CodeSpan;
-use crate::eval::Type;
 
 #[derive(Debug)]
 pub enum RuntimeError {

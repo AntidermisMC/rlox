@@ -1,5 +1,5 @@
-use std::collections::HashMap;
 use crate::code_span::CodeSpan;
+use std::collections::HashMap;
 
 #[derive(PartialEq, Debug)]
 pub enum ValueType {

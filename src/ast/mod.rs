@@ -1,7 +1,7 @@
 mod conversions;
 
-use std::fmt::{Display, Formatter};
 use crate::code_span::CodeSpan;
+use std::fmt::{Display, Formatter};
 
 pub enum Expression {
     Literal(Literal),
