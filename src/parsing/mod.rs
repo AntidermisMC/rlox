@@ -2,7 +2,6 @@ mod expressions;
 mod parsing_error;
 
 use crate::ast::LiteralValue::{False, Nil, NumberLiteral, StringLiteral, True};
-use crate::ast::{Binary, BinaryOperator, Expression, Literal, Unary, UnaryOperator};
 use crate::code_span::CodeSpan;
 use crate::scanning::TokenType;
 use crate::scanning::{Token, TokenStream};
@@ -30,12 +29,13 @@ macro_rules! try_parse {
     }};
 }
 
+use crate::ast::expressions::{Binary, BinaryOperator, Expression, Literal, Unary, UnaryOperator};
 pub(crate) use try_parse;
 
 #[cfg(test)]
 pub mod tests {
     use super::*;
-    use crate::ast::Expression;
+    use crate::ast::expressions::Expression;
     use crate::scanning::TokenStream;
 
     pub fn assert_equal_repr(

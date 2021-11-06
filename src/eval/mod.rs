@@ -4,7 +4,8 @@ mod types;
 #[cfg(test)]
 mod tests;
 
-use crate::ast::{AstVisitor, Binary, BinaryOperator, Literal, LiteralValue, Unary, UnaryOperator};
+use crate::ast::expressions::{Binary, BinaryOperator, Literal, Unary, UnaryOperator};
+use crate::ast::{AstVisitor, LiteralValue};
 use crate::code_span::CodeSpan;
 use crate::eval::RuntimeError::{DivisionByZero, MismatchedTypes};
 use runtime_error::RuntimeError;

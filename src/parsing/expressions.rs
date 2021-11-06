@@ -1,5 +1,5 @@
+use crate::ast::expressions::{Binary, BinaryOperator, Expression, Literal, Unary, UnaryOperator};
 use crate::ast::LiteralValue::{False, Nil, NumberLiteral, StringLiteral, True};
-use crate::ast::{Binary, BinaryOperator, Expression, Literal, Unary, UnaryOperator};
 use crate::code_span::CodeSpan;
 use crate::parsing::try_parse;
 use crate::parsing::ParsingError;

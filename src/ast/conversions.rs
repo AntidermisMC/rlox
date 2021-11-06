@@ -1,7 +1,7 @@
-use super::BinaryOperator;
-use crate::ast::BinaryOperator::*;
-use crate::ast::UnaryOperator;
-use crate::ast::UnaryOperator::*;
+use crate::ast::expressions::BinaryOperator;
+use crate::ast::expressions::BinaryOperator::*;
+use crate::ast::expressions::UnaryOperator;
+use crate::ast::expressions::UnaryOperator::*;
 use crate::error::Error;
 use crate::scanning::{Token, TokenType};
 use std::convert::TryFrom;
