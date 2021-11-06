@@ -1,12 +1,15 @@
 mod parsing_error;
 
-pub use parsing_error::ParsingError;
+#[cfg(test)]
+mod tests;
+
 use crate::ast::LiteralValue::{False, Nil, NumberLiteral, StringLiteral, True};
 use crate::ast::{Binary, BinaryOperator, Expression, Literal, Unary, UnaryOperator};
-use crate::scanning::{TokenStream, Token};
-use crate::scanning::TokenType;
-use std::convert::TryFrom;
 use crate::code_span::CodeSpan;
+use crate::scanning::TokenType;
+use crate::scanning::{Token, TokenStream};
+pub use parsing_error::ParsingError;
+use std::convert::TryFrom;
 
 type Result<T> = std::result::Result<T, ParsingError>;
 
@@ -126,7 +129,9 @@ fn parse_factor(tokens: &mut TokenStream) -> Result<Expression> {
 
 fn parse_unary(tokens: &mut TokenStream) -> Result<Expression> {
     match tokens.next() {
-        None => Err(ParsingError::UnexpectedEndOfTokenStream(tokens.current_position())),
+        None => Err(ParsingError::UnexpectedEndOfTokenStream(
+            tokens.current_position(),
+        )),
         Some(tok) => {
             if tok.is_of_type(TokenType::Bang) || tok.is_of_type(TokenType::Minus) {
                 let expr = parse_unary(tokens)?;
@@ -159,108 +164,20 @@ fn parse_primary(tokens: &mut TokenStream) -> Result<Expression> {
                 match tokens.next() {
                     Some(t) if t.is_of_type(TokenType::RightParen) => Ok(expr),
                     Some(tok) => Err(ParsingError::UnexpectedToken(tok)),
-                    None => Err(ParsingError::UnexpectedEndOfTokenStream(tokens.current_position())),
+                    None => Err(ParsingError::UnexpectedEndOfTokenStream(
+                        tokens.current_position(),
+                    )),
                 }
             }
 
-            invalid_token => Err(ParsingError::UnexpectedToken(Token::new(invalid_token, span))),
+            invalid_token => Err(ParsingError::UnexpectedToken(Token::new(
+                invalid_token,
+                span,
+            ))),
         }
     } else {
-        Err(ParsingError::UnexpectedEndOfTokenStream(tokens.current_position()))
+        Err(ParsingError::UnexpectedEndOfTokenStream(
+            tokens.current_position(),
+        ))
     }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn assert_equal_repr(
-        to_be_tested: &str,
-        parsing_function: fn(&mut TokenStream) -> Result<Expression>,
-    ) {
-        assert_eq!(
-            to_be_tested,
-            parsing_function(&mut TokenStream::new(to_be_tested))
-                .unwrap()
-                .to_string()
-        )
-    }
-
-    macro_rules! test_cases {
-        ($parsing_function:ident, $($case:expr),*) => {
-            $(assert_equal_repr($case, $parsing_function);)*
-        }
-    }
-
-    macro_rules! gen_tests {
-        ($name:ident, $function:ident, $($case:expr),*) => {
-            #[test]
-            fn $name() {
-                test_cases!($function, $($case),*);
-            }
-        };
-    }
-
-    gen_tests!(
-        primary,
-        parse_primary,
-        "true",
-        "false",
-        "nil",
-        "\"hi\"",
-        "42"
-    );
-
-    gen_tests!(
-        unary,
-        parse_unary,
-        "true",
-        "!true",
-        "!!true",
-        "-1",
-        "--1",
-        "!(1 + 1)"
-    );
-
-    gen_tests!(
-        factor,
-        parse_factor,
-        "1",
-        "1 * 1",
-        "1 / 1",
-        "1 * 1 / 1",
-        "1 * (1 / 1)",
-        "-(1 / 1)"
-    );
-
-    gen_tests!(
-        term,
-        parse_term,
-        "1",
-        "1 + 1",
-        "1 - 1",
-        "1 + 1 - 1",
-        "1 + (1 - 1)",
-        "1 * 1 + 1",
-        "1 - 1 * 1"
-    );
-
-    gen_tests!(
-        comparison,
-        parse_comparison,
-        "1",
-        "1 < 1",
-        "1 * 1 > 1",
-        "-1 <= 1 + 1",
-        "!(1 >= 1)"
-    );
-
-    gen_tests!(
-        equality,
-        parse_equality,
-        "1",
-        "1 == 1",
-        "1 + 1 != 1",
-        "true == !false"
-    );
 }
