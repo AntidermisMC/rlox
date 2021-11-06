@@ -61,7 +61,7 @@ impl AstVisitor for Evaluator {
     }
 
     fn visit_unary(&self, unary: &Unary) -> Self::Return {
-        let value = self.visit_expr(unary.expr.as_ref())?;
+        let value = self.visit_expression(unary.expr.as_ref())?;
         match (unary.op, value.value) {
             (UnaryOperator::Minus, ValueType::Number(n)) => {
                 Ok(Value::new(ValueType::Number(-n), unary.location))
@@ -79,8 +79,8 @@ impl AstVisitor for Evaluator {
     }
 
     fn visit_binary(&self, binary: &Binary) -> Self::Return {
-        let left = self.visit_expr(binary.left.as_ref())?;
-        let right = self.visit_expr(binary.right.as_ref())?;
+        let left = self.visit_expression(binary.left.as_ref())?;
+        let right = self.visit_expression(binary.right.as_ref())?;
         let span = CodeSpan::combine(left.location, right.location);
         match binary.operator {
             BinaryOperator::Addition => addition(left, right, span),

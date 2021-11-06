@@ -1,10 +1,9 @@
 mod conversions;
 pub mod expressions;
+pub mod statements;
 
-use crate::code_span::CodeSpan;
-use expressions::*;
+use crate::ast::statements::Statement;
 use expressions::{Binary, Expression, Literal, Unary};
-use std::fmt::{Display, Formatter};
 
 pub enum LiteralValue {
     StringLiteral(String),
@@ -23,11 +22,18 @@ pub trait AstNode {
 pub trait AstVisitor: Sized {
     type Return;
 
-    fn visit_expr(&self, expr: &Expression) -> Self::Return {
+    fn visit_expression(&self, expr: &Expression) -> Self::Return {
         match expr {
             Expression::Literal(l) => l.accept(self),
             Expression::UnaryOperation(u) => u.accept(self),
             Expression::BinaryOperation(b) => b.accept(self),
+        }
+    }
+
+    fn visit_statement(&self, stmt: &Statement) -> Self::Return {
+        match stmt {
+            Statement::Print(expr) => expr.accept(self),
+            Statement::Expression(expr) => expr.accept(self),
         }
     }
 

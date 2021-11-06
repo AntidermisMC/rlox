@@ -1,18 +1,20 @@
 mod expressions;
 mod parsing_error;
+mod statements;
 
-use crate::ast::LiteralValue::{False, Nil, NumberLiteral, StringLiteral, True};
-use crate::code_span::CodeSpan;
-use crate::scanning::TokenType;
-use crate::scanning::{Token, TokenStream};
-use expressions::parse_expression;
+use crate::scanning::TokenStream;
 pub use parsing_error::ParsingError;
-use std::convert::TryFrom;
 
 type Result<T> = std::result::Result<T, ParsingError>;
 
-pub fn parse(tokens: &mut TokenStream) -> Result<Expression> {
-    parse_expression(tokens)
+pub fn parse(tokens: &mut TokenStream) -> Result<Statements> {
+    let mut stmts = Vec::new();
+
+    while tokens.has_next() {
+        stmts.push(parse_statement(tokens)?);
+    }
+
+    Ok(Statements { stmts })
 }
 
 macro_rules! try_parse {
@@ -29,18 +31,18 @@ macro_rules! try_parse {
     }};
 }
 
-use crate::ast::expressions::{Binary, BinaryOperator, Expression, Literal, Unary, UnaryOperator};
+use crate::ast::statements::Statements;
+use crate::parsing::statements::parse_statement;
 pub(crate) use try_parse;
 
 #[cfg(test)]
 pub mod tests {
     use super::*;
-    use crate::ast::expressions::Expression;
     use crate::scanning::TokenStream;
 
-    pub fn assert_equal_repr(
+    pub fn assert_equal_repr<T: ToString>(
         to_be_tested: &str,
-        parsing_function: fn(&mut TokenStream) -> Result<Expression>,
+        parsing_function: fn(&mut TokenStream) -> Result<T>,
     ) {
         assert_eq!(
             to_be_tested,

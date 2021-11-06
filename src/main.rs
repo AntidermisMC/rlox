@@ -57,11 +57,13 @@ fn run(code: &mut str) -> Option<u8> {
     let tree = parsing::parse(&mut tokens);
     match tree {
         Err(e) => print!("{}", e),
-        Ok(exp) => {
-            let res = eval::Evaluator {}.visit_expr(&exp);
-            match res {
-                Ok(val) => print!("{:?}", val),
-                Err(e) => print!("{}", e),
+        Ok(stmts) => {
+            for stmt in stmts {
+                let res = eval::Evaluator {}.visit_statement(&stmt);
+                match res {
+                    Ok(val) => print!("{:?}", val),
+                    Err(e) => print!("{}", e),
+                }
             }
         }
     }

@@ -62,7 +62,9 @@ impl<'a> TokenStream<'a> {
 
     pub fn peek(&mut self) -> Option<<Self as Iterator>::Item> {
         let item = self.next();
-        self.back();
+        if item.is_some() {
+            self.back();
+        }
         item
     }
 
@@ -86,6 +88,13 @@ impl<'a> TokenStream<'a> {
         match self.vec.last() {
             None => Location::start(),
             Some(token) => token.span.end,
+        }
+    }
+
+    pub fn has_next(&mut self) -> bool {
+        match self.peek() {
+            Some(_) => true,
+            None => false,
         }
     }
 }
@@ -216,5 +225,16 @@ mod tests {
     #[should_panic]
     fn back_from_start() {
         TokenStream::new("a").back()
+    }
+
+    #[test]
+    fn eof_peek_then_next() {
+        let text = "1";
+        let expected = "";
+        let mut token_stream = TokenStream::new(text);
+
+        token_stream.next();
+        token_stream.peek();
+        assert_eq!(token_stream.next(), None);
     }
 }

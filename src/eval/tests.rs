@@ -8,8 +8,14 @@ use crate::scanning::TokenStream;
 fn assert_eval(code: &str, result: ValueType) {
     let mut tokens = TokenStream::new(code);
     let tree = parse(&mut tokens).unwrap();
-    let value = Evaluator {}.visit_expr(&tree).unwrap();
-    assert_eq!(value.value, result);
+    let mut value = ValueType::Nil;
+    for stmt in tree {
+        value = Evaluator {}
+            .visit_statement(&stmt)
+            .expect("Not an Ok(_)")
+            .value;
+    }
+    assert_eq!(value, result);
 }
 
 macro_rules! gen_tests {

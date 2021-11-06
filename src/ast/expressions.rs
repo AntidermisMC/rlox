@@ -119,7 +119,7 @@ impl Priority for Expression {
 
 impl AstNode for Expression {
     fn accept<T: AstVisitor>(&self, visitor: &T) -> T::Return {
-        visitor.visit_expr(self)
+        visitor.visit_expression(self)
     }
 }
 
