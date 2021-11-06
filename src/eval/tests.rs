@@ -101,3 +101,12 @@ gen_tests!(inequality_same_types,
     { r#""hey" != """#,      Boolean(true)  },
     { r#""hey" != "hello""#, Boolean(true)  }
 );
+
+gen_tests!(complex_expressions,
+    { r#""a" + "b" + "c""#, String("abc".to_string()) },
+    { "!true != !false",    Boolean(true)             },
+    { "4 + 3 == 14 / 2",    Boolean(true)             },
+    { "1 + 2 * 3 == 7",     Boolean(true)             },
+    { "(1 + 2) * 3 == 9",   Boolean(true)             },
+    { " 1 < 2 == 3 >= 0",   Boolean(true)             }
+);
