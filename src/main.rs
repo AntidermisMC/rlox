@@ -61,7 +61,7 @@ fn run(code: &mut str) -> Option<u8> {
             for stmt in stmts {
                 let res = eval::Evaluator {}.visit_statement(&stmt);
                 match res {
-                    Ok(val) => print!("{:?}", val),
+                    Ok(_) => (),
                     Err(e) => print!("{}", e),
                 }
             }

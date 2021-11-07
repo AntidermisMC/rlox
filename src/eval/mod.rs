@@ -5,7 +5,8 @@ mod types;
 mod tests;
 
 use crate::ast::expressions::{Binary, BinaryOperator, Literal, Unary, UnaryOperator};
-use crate::ast::{AstVisitor, LiteralValue};
+use crate::ast::statements::Statement;
+use crate::ast::{AstNode, AstVisitor, LiteralValue};
 use crate::code_span::CodeSpan;
 use crate::eval::RuntimeError::{DivisionByZero, MismatchedTypes};
 use runtime_error::RuntimeError;
@@ -47,6 +48,17 @@ fn as_string(value: &Value) -> Result<String> {
 
 impl AstVisitor for Evaluator {
     type Return = Result<Value>;
+
+    fn visit_statement(&self, stmt: &Statement) -> Self::Return {
+        match stmt {
+            Statement::Print(expr) => {
+                let value = expr.accept(self)?;
+                print!("{}", value);
+                Ok(value)
+            }
+            Statement::Expression(expr) => expr.accept(self),
+        }
+    }
 
     fn visit_literal(&self, literal: &Literal) -> Self::Return {
         Ok(match &literal.value {

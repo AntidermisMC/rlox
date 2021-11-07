@@ -69,4 +69,11 @@ pub mod tests {
 
     pub(crate) use gen_tests;
     pub(crate) use test_cases;
+
+    gen_tests!(
+        multiple_statements,
+        parse,
+        "print 1\nprint 2\n",
+        "1\nprint 2\n"
+    );
 }

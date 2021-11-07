@@ -1,5 +1,6 @@
 use crate::code_span::CodeSpan;
 use std::collections::HashMap;
+use std::fmt::{Display, Formatter};
 
 #[derive(PartialEq, Debug)]
 pub enum ValueType {
@@ -53,6 +54,24 @@ impl From<&ValueType> for Type {
             ValueType::Boolean(_) => Type::Boolean,
             ValueType::Nil => Type::Nil,
             ValueType::Object(_) => Type::Object,
+        }
+    }
+}
+
+impl Display for Value {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.value)
+    }
+}
+
+impl Display for ValueType {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ValueType::String(s) => write!(f, "{}", s),
+            ValueType::Number(n) => write!(f, "{}", n),
+            ValueType::Boolean(b) => write!(f, "{}", b),
+            ValueType::Nil => write!(f, "nil"),
+            ValueType::Object(_) => write!(f, "[Object object]"),
         }
     }
 }
