@@ -4,19 +4,13 @@ use crate::eval::types::ValueType::Number;
 use crate::eval::types::{ValueType, ValueType::*};
 use crate::eval::Evaluator;
 use crate::parsing::parse;
+use crate::parsing::parse_expression;
 use crate::scanning::TokenStream;
 
 fn assert_eval(code: &str, result: ValueType) {
     let mut tokens = TokenStream::new(code);
-    let tree = parse(&mut tokens).unwrap();
-    let mut value = ValueType::Nil;
-    for stmt in tree {
-        value = Evaluator {}
-            .visit_statement(&stmt)
-            .expect("Not an Ok(_)")
-            .value;
-    }
-    assert_eq!(value, result);
+    let tree = parse_expression(&mut tokens).unwrap();
+    assert_eq!(Evaluator {}.visit_expression(&tree).unwrap().value, result);
 }
 
 macro_rules! gen_tests {

@@ -1,6 +1,7 @@
 use super::parsing_error::ParsingError;
 use super::Result;
 use crate::ast::statements::Statement;
+use crate::parsing::consume;
 use crate::parsing::expressions::parse_expression;
 use crate::scanning::{TokenStream, TokenType};
 
@@ -22,7 +23,9 @@ pub fn parse_statement(tokens: &mut TokenStream) -> Result<Statement> {
             if let TokenType::Print = t.get_type() {
                 parse_print(tokens)
             } else {
-                Ok(Statement::Expression(parse_expression(tokens)?))
+                let expr = parse_expression(tokens)?;
+                consume(tokens, TokenType::Semicolon)?;
+                Ok(Statement::Expression(expr))
             }
         }
     }
@@ -31,7 +34,11 @@ pub fn parse_statement(tokens: &mut TokenStream) -> Result<Statement> {
 fn parse_print(tokens: &mut TokenStream) -> Result<Statement> {
     if let Some(token) = tokens.next() {
         match token.get_type() {
-            TokenType::Print => Ok(Statement::Print(parse_expression(tokens)?)),
+            TokenType::Print => {
+                let expr = parse_expression(tokens)?;
+                consume(tokens, TokenType::Semicolon)?;
+                Ok(Statement::Print(expr))
+            }
             _ => Err(ParsingError::UnexpectedToken(token)),
         }
     } else {
@@ -49,16 +56,16 @@ mod tests {
     gen_tests!(
         test_print_statements,
         parse_print,
-        "print 1",
-        "print 1 + 1",
-        "print \"hello\""
+        "print 1;",
+        "print 1 + 1;",
+        "print \"hello\";"
     );
 
     gen_tests!(
         test_statements,
         parse_statement,
-        "1",
-        "print 2",
-        "print 1 + 1"
+        "1;",
+        "print 2;",
+        "print 1 + 1;"
     );
 }

@@ -2,7 +2,8 @@ mod expressions;
 mod parsing_error;
 mod statements;
 
-use crate::scanning::TokenStream;
+use crate::scanning::{TokenStream, TokenType};
+pub use expressions::parse_expression;
 pub use parsing_error::ParsingError;
 
 type Result<T> = std::result::Result<T, ParsingError>;
@@ -29,6 +30,20 @@ macro_rules! try_parse {
             }
         }
     }};
+}
+
+/// Consumes the first token of the stream if it is of the right type, else errors.
+fn consume(tokens: &mut TokenStream, token: TokenType) -> Result<()> {
+    match tokens.peek() {
+        Some(t) if t.is_of_type(token) => {
+            tokens.next();
+            Ok(())
+        }
+        Some(t) => Err(ParsingError::UnexpectedToken(t)),
+        None => Err(ParsingError::UnexpectedEndOfTokenStream(
+            tokens.current_position(),
+        )),
+    }
 }
 
 use crate::ast::statements::Statements;
@@ -73,7 +88,7 @@ pub mod tests {
     gen_tests!(
         multiple_statements,
         parse,
-        "print 1\nprint 2\n",
-        "1\nprint 2\n"
+        "print 1;\nprint 2;\n",
+        "1;\nprint 2;\n"
     );
 }

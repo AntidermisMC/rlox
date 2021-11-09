@@ -32,8 +32,8 @@ impl IntoIterator for Statements {
 impl Display for Statement {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            Statement::Print(expr) => write!(f, "print {}", expr),
-            Statement::Expression(expr) => write!(f, "{}", expr),
+            Statement::Print(expr) => write!(f, "print {};", expr),
+            Statement::Expression(expr) => write!(f, "{};", expr),
         }
     }
 }
