@@ -1,3 +1,11 @@
+use std::env;
+use std::io::{Read, Write};
+
+use crate::ast::statements::StatementVisitor;
+use ast::expressions::ExpressionVisitor;
+
+use crate::scanning::TokenStream;
+
 mod ast;
 mod code_span;
 mod error;
@@ -6,11 +14,6 @@ mod location;
 mod location_tracking_iterator;
 mod parsing;
 mod scanning;
-
-use crate::ast::AstVisitor;
-use crate::scanning::TokenStream;
-use std::env;
-use std::io::{Read, Write};
 
 fn main() {
     let args: Vec<String> = env::args().collect();

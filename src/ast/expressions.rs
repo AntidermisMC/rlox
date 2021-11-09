@@ -1,6 +1,8 @@
-use crate::ast::{AstNode, AstVisitor, LiteralValue};
-use crate::code_span::CodeSpan;
 use std::fmt::{Display, Formatter};
+
+use crate::ast::statements::Statement;
+use crate::ast::LiteralValue;
+use crate::code_span::CodeSpan;
 
 pub enum Expression {
     Literal(Literal),
@@ -117,26 +119,26 @@ impl Priority for Expression {
     }
 }
 
-impl AstNode for Expression {
-    fn accept<T: AstVisitor>(&self, visitor: &T) -> T::Return {
+impl ExpressionNode for Expression {
+    fn accept<T: ExpressionVisitor>(&self, visitor: &T) -> T::Return {
         visitor.visit_expression(self)
     }
 }
 
-impl AstNode for Literal {
-    fn accept<T: AstVisitor>(&self, visitor: &T) -> T::Return {
+impl ExpressionNode for Literal {
+    fn accept<T: ExpressionVisitor>(&self, visitor: &T) -> T::Return {
         visitor.visit_literal(self)
     }
 }
 
-impl AstNode for Unary {
-    fn accept<T: AstVisitor>(&self, visitor: &T) -> T::Return {
+impl ExpressionNode for Unary {
+    fn accept<T: ExpressionVisitor>(&self, visitor: &T) -> T::Return {
         visitor.visit_unary(self)
     }
 }
 
-impl AstNode for Binary {
-    fn accept<T: AstVisitor>(&self, visitor: &T) -> T::Return {
+impl ExpressionNode for Binary {
+    fn accept<T: ExpressionVisitor>(&self, visitor: &T) -> T::Return {
         visitor.visit_binary(self)
     }
 }
@@ -218,4 +220,24 @@ impl Display for Expression {
             Self::UnaryOperation(u) => write!(f, "{}", u),
         }
     }
+}
+
+pub trait ExpressionNode {
+    fn accept<T: ExpressionVisitor>(&self, visitor: &T) -> T::Return;
+}
+
+pub trait ExpressionVisitor: Sized {
+    type Return;
+
+    fn visit_expression(&self, expr: &Expression) -> Self::Return {
+        match expr {
+            Expression::Literal(l) => l.accept(self),
+            Expression::UnaryOperation(u) => u.accept(self),
+            Expression::BinaryOperation(b) => b.accept(self),
+        }
+    }
+
+    fn visit_literal(&self, literal: &Literal) -> Self::Return;
+    fn visit_unary(&self, unary: &Unary) -> Self::Return;
+    fn visit_binary(&self, binary: &Binary) -> Self::Return;
 }

@@ -1,17 +1,22 @@
+use std::collections::HashSet;
+
+use runtime_error::RuntimeError;
+use types::{Type, Value, ValueType};
+
+use crate::ast::expressions::{
+    Binary, BinaryOperator, Expression, ExpressionNode, ExpressionVisitor, Literal, Unary,
+    UnaryOperator,
+};
+use crate::ast::statements::{Statement, StatementVisitor};
+use crate::ast::LiteralValue;
+use crate::code_span::CodeSpan;
+use crate::eval::RuntimeError::{DivisionByZero, MismatchedTypes};
+
 mod runtime_error;
 mod types;
 
 #[cfg(test)]
 mod tests;
-
-use crate::ast::expressions::{Binary, BinaryOperator, Literal, Unary, UnaryOperator};
-use crate::ast::statements::Statement;
-use crate::ast::{AstNode, AstVisitor, LiteralValue};
-use crate::code_span::CodeSpan;
-use crate::eval::RuntimeError::{DivisionByZero, MismatchedTypes};
-use runtime_error::RuntimeError;
-use std::collections::HashSet;
-use types::{Type, Value, ValueType};
 
 pub struct Evaluator {}
 
@@ -46,19 +51,16 @@ fn as_string(value: &Value) -> Result<String> {
     }
 }
 
-impl AstVisitor for Evaluator {
-    type Return = Result<Value>;
-
-    fn visit_statement(&self, stmt: &Statement) -> Self::Return {
-        match stmt {
-            Statement::Print(expr) => {
-                let value = expr.accept(self)?;
-                print!("{}", value);
-                Ok(value)
-            }
-            Statement::Expression(expr) => expr.accept(self),
-        }
+impl StatementVisitor for Evaluator {
+    fn visit_print(&self, expr: &Expression) -> Self::Return {
+        let value = expr.accept(self)?;
+        print!("{}", value);
+        Ok(value)
     }
+}
+
+impl ExpressionVisitor for Evaluator {
+    type Return = Result<Value>;
 
     fn visit_literal(&self, literal: &Literal) -> Self::Return {
         Ok(match &literal.value {
