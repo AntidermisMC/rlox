@@ -1,6 +1,5 @@
 use std::fmt::{Display, Formatter};
 
-use crate::ast::statements::Statement;
 use crate::ast::LiteralValue;
 use crate::code_span::CodeSpan;
 

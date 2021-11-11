@@ -1,4 +1,4 @@
-use crate::ast::expressions::{Expression, ExpressionNode, ExpressionVisitor};
+use crate::ast::expressions::Expression;
 use std::fmt::{Display, Formatter};
 use std::vec::IntoIter;
 
@@ -38,13 +38,9 @@ impl Display for Statement {
     }
 }
 
-pub trait StatementVisitor: ExpressionVisitor {
-    fn visit_statement(&self, stmt: &Statement) -> Self::Return {
-        match stmt {
-            Statement::Print(expr) => self.visit_print(expr),
-            Statement::Expression(expr) => expr.accept(self),
-        }
-    }
+pub trait StatementVisitor {
+    type Return;
 
+    fn visit_statement(&self, stmt: &Statement) -> Self::Return;
     fn visit_print(&self, expr: &Expression) -> Self::Return;
 }

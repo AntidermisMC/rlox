@@ -230,7 +230,6 @@ mod tests {
     #[test]
     fn eof_peek_then_next() {
         let text = "1";
-        let expected = "";
         let mut token_stream = TokenStream::new(text);
 
         token_stream.next();

@@ -1,9 +1,7 @@
 use crate::ast::expressions::ExpressionVisitor;
-use crate::ast::statements::StatementVisitor;
 use crate::eval::types::ValueType::Number;
 use crate::eval::types::{ValueType, ValueType::*};
 use crate::eval::Evaluator;
-use crate::parsing::parse;
 use crate::parsing::parse_expression;
 use crate::scanning::TokenStream;
 

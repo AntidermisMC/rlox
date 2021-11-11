@@ -52,10 +52,19 @@ fn as_string(value: &Value) -> Result<String> {
 }
 
 impl StatementVisitor for Evaluator {
+    type Return = Result<()>;
+
+    fn visit_statement(&self, stmt: &Statement) -> Self::Return {
+        match stmt {
+            Statement::Print(expr) => self.visit_print(expr),
+            Statement::Expression(expr) => expr.accept(self).map(|_| ()),
+        }
+    }
+
     fn visit_print(&self, expr: &Expression) -> Self::Return {
         let value = expr.accept(self)?;
         print!("{}", value);
-        Ok(value)
+        Ok(())
     }
 }
 

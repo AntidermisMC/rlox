@@ -2,7 +2,6 @@ use std::env;
 use std::io::{Read, Write};
 
 use crate::ast::statements::StatementVisitor;
-use ast::expressions::ExpressionVisitor;
 
 use crate::scanning::TokenStream;
 
