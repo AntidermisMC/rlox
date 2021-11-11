@@ -1,13 +1,27 @@
 use super::Result;
 use crate::ast::declarations::VariableDeclaration;
 use crate::ast::expressions::{Expression, Identifier, Literal};
+use crate::ast::statements::Statement;
 use crate::ast::LiteralValue;
 use crate::code_span::CodeSpan;
+use crate::parsing::statements::parse_statement;
 use crate::parsing::{consume, parse_expression, ParsingError};
 use crate::scanning::{Token, TokenStream, TokenType};
 
-pub fn parse_declaration(tokens: &mut TokenStream) -> Result<()> {
-    todo!()
+pub fn parse_declaration(tokens: &mut TokenStream) -> Result<Statement> {
+    if let Some(t) = tokens.peek() {
+        if t.consume() == TokenType::Var {
+            Ok(Statement::VariableDeclaration(parse_variable_declaration(
+                tokens,
+            )?))
+        } else {
+            parse_statement(tokens)
+        }
+    } else {
+        Err(ParsingError::UnexpectedEndOfTokenStream(
+            tokens.current_position(),
+        ))
+    }
 }
 
 fn parse_variable_declaration(tokens: &mut TokenStream) -> Result<VariableDeclaration> {
@@ -44,4 +58,18 @@ fn parse_variable_declaration(tokens: &mut TokenStream) -> Result<VariableDeclar
             tokens.current_position(),
         )),
     }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::super::tests::*;
+    use super::*;
+
+    gen_tests!(
+        test_variable_declarations,
+        parse_variable_declaration,
+        "var a = 1;",
+        "var b;",
+        "var c = 1 + 1 / 2;"
+    );
 }

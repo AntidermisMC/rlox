@@ -4,22 +4,10 @@ mod parsing_error;
 mod statements;
 
 use crate::ast::statements::Statements;
-use crate::parsing::statements::parse_statement;
+use crate::parsing::declarations::parse_declaration;
 use crate::scanning::{Token, TokenStream, TokenType};
 pub use expressions::parse_expression;
 pub use parsing_error::ParsingError;
-
-type Result<T> = std::result::Result<T, ParsingError>;
-
-pub fn parse(tokens: &mut TokenStream) -> Result<Statements> {
-    let mut stmts = Vec::new();
-
-    while tokens.has_next() {
-        stmts.push(parse_statement(tokens)?);
-    }
-
-    Ok(Statements { stmts })
-}
 
 macro_rules! try_parse {
     // TODO maybe remove this ? Not actually necessary atm, maybe when parser is complete
@@ -34,8 +22,19 @@ macro_rules! try_parse {
         }
     }};
 }
-
 pub(crate) use try_parse;
+
+type Result<T> = std::result::Result<T, ParsingError>;
+
+pub fn parse(tokens: &mut TokenStream) -> Result<Statements> {
+    let mut stmts = Vec::new();
+
+    while tokens.has_next() {
+        stmts.push(parse_declaration(tokens)?);
+    }
+
+    Ok(Statements { stmts })
+}
 
 /// Consumes the first token of the stream if it is of the right type, else errors.
 fn consume(tokens: &mut TokenStream, token: TokenType) -> Result<Token> {
