@@ -7,6 +7,7 @@ pub enum Expression {
     Literal(Literal),
     UnaryOperation(Unary),
     BinaryOperation(Binary),
+    Identifier(Identifier),
 }
 
 pub struct Literal {
@@ -47,12 +48,18 @@ pub enum BinaryOperator {
     Division,
 }
 
+pub struct Identifier {
+    pub ident: String,
+    pub location: CodeSpan,
+}
+
 impl Expression {
     pub fn get_location(&self) -> CodeSpan {
         match self {
             Expression::Literal(l) => l.location,
             Expression::UnaryOperation(u) => u.location,
             Expression::BinaryOperation(b) => b.location,
+            Expression::Identifier(i) => i.location,
         }
     }
 }
@@ -108,12 +115,19 @@ impl Priority for Literal {
     }
 }
 
+impl Priority for Identifier {
+    fn priority(&self) -> u8 {
+        5
+    }
+}
+
 impl Priority for Expression {
     fn priority(&self) -> u8 {
         match self {
             Expression::Literal(l) => l.priority(),
             Expression::UnaryOperation(u) => u.priority(),
             Expression::BinaryOperation(b) => b.operator.priority(),
+            Expression::Identifier(i) => i.priority(),
         }
     }
 }
@@ -139,6 +153,12 @@ impl ExpressionNode for Unary {
 impl ExpressionNode for Binary {
     fn accept<T: ExpressionVisitor>(&self, visitor: &T) -> T::Return {
         visitor.visit_binary(self)
+    }
+}
+
+impl ExpressionNode for Identifier {
+    fn accept<T: ExpressionVisitor>(&self, visitor: &T) -> T::Return {
+        visitor.visit_identifier(self)
     }
 }
 
@@ -217,6 +237,7 @@ impl Display for Expression {
             Self::Literal(l) => write!(f, "{}", l),
             Self::BinaryOperation(b) => write!(f, "{}", b),
             Self::UnaryOperation(u) => write!(f, "{}", u),
+            Self::Identifier(i) => write!(f, "{}", i.ident),
         }
     }
 }
@@ -233,10 +254,12 @@ pub trait ExpressionVisitor: Sized {
             Expression::Literal(l) => l.accept(self),
             Expression::UnaryOperation(u) => u.accept(self),
             Expression::BinaryOperation(b) => b.accept(self),
+            Expression::Identifier(i) => i.accept(self),
         }
     }
 
     fn visit_literal(&self, literal: &Literal) -> Self::Return;
     fn visit_unary(&self, unary: &Unary) -> Self::Return;
     fn visit_binary(&self, binary: &Binary) -> Self::Return;
+    fn visit_identifier(&self, identifier: &Identifier) -> Self::Return;
 }

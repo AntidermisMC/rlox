@@ -4,8 +4,8 @@ use runtime_error::RuntimeError;
 use types::{Type, Value, ValueType};
 
 use crate::ast::expressions::{
-    Binary, BinaryOperator, Expression, ExpressionNode, ExpressionVisitor, Literal, Unary,
-    UnaryOperator,
+    Binary, BinaryOperator, Expression, ExpressionNode, ExpressionVisitor, Identifier, Literal,
+    Unary, UnaryOperator,
 };
 use crate::ast::statements::{Statement, StatementVisitor};
 use crate::ast::LiteralValue;
@@ -117,6 +117,10 @@ impl ExpressionVisitor for Evaluator {
             BinaryOperator::Equality => equality(left, right, span),
             BinaryOperator::Inequality => inequality(left, right, span),
         }
+    }
+
+    fn visit_identifier(&self, identifier: &Identifier) -> Self::Return {
+        todo!()
     }
 }
 
