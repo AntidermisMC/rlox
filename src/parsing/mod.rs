@@ -1,8 +1,11 @@
+mod declarations;
 mod expressions;
 mod parsing_error;
 mod statements;
 
-use crate::scanning::{TokenStream, TokenType};
+use crate::ast::statements::Statements;
+use crate::parsing::statements::parse_statement;
+use crate::scanning::{Token, TokenStream, TokenType};
 pub use expressions::parse_expression;
 pub use parsing_error::ParsingError;
 
@@ -32,12 +35,14 @@ macro_rules! try_parse {
     }};
 }
 
+pub(crate) use try_parse;
+
 /// Consumes the first token of the stream if it is of the right type, else errors.
-fn consume(tokens: &mut TokenStream, token: TokenType) -> Result<()> {
+fn consume(tokens: &mut TokenStream, token: TokenType) -> Result<Token> {
     match tokens.peek() {
         Some(t) if t.is_of_type(token) => {
             tokens.next();
-            Ok(())
+            Ok(t)
         }
         Some(t) => Err(ParsingError::UnexpectedToken(t)),
         None => Err(ParsingError::UnexpectedEndOfTokenStream(
@@ -45,10 +50,6 @@ fn consume(tokens: &mut TokenStream, token: TokenType) -> Result<()> {
         )),
     }
 }
-
-use crate::ast::statements::Statements;
-use crate::parsing::statements::parse_statement;
-pub(crate) use try_parse;
 
 #[cfg(test)]
 pub mod tests {

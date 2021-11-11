@@ -1,3 +1,4 @@
+use crate::ast::declarations::VariableDeclaration;
 use crate::ast::expressions::Expression;
 use std::fmt::{Display, Formatter};
 use std::vec::IntoIter;
@@ -5,6 +6,7 @@ use std::vec::IntoIter;
 pub enum Statement {
     Print(Expression),
     Expression(Expression),
+    VariableDeclaration(VariableDeclaration),
 }
 
 pub struct Statements {
@@ -34,6 +36,7 @@ impl Display for Statement {
         match self {
             Statement::Print(expr) => write!(f, "print {};", expr),
             Statement::Expression(expr) => write!(f, "{};", expr),
+            Statement::VariableDeclaration(v) => write!(f, "{};", v),
         }
     }
 }
@@ -43,4 +46,5 @@ pub trait StatementVisitor {
 
     fn visit_statement(&self, stmt: &Statement) -> Self::Return;
     fn visit_print(&self, expr: &Expression) -> Self::Return;
+    fn visit_variable_declaration(&self, decl: &VariableDeclaration) -> Self::Return;
 }

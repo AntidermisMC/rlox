@@ -1,5 +1,6 @@
 use std::collections::HashSet;
 
+use crate::ast::declarations::VariableDeclaration;
 use runtime_error::RuntimeError;
 use types::{Type, Value, ValueType};
 
@@ -58,6 +59,9 @@ impl StatementVisitor for Evaluator {
         match stmt {
             Statement::Print(expr) => self.visit_print(expr),
             Statement::Expression(expr) => expr.accept(self).map(|_| ()),
+            Statement::VariableDeclaration(declaration) => {
+                self.visit_variable_declaration(declaration)
+            }
         }
     }
 
@@ -65,6 +69,10 @@ impl StatementVisitor for Evaluator {
         let value = expr.accept(self)?;
         print!("{}", value);
         Ok(())
+    }
+
+    fn visit_variable_declaration(&self, decl: &VariableDeclaration) -> Self::Return {
+        todo!()
     }
 }
 
