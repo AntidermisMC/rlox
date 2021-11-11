@@ -1,4 +1,6 @@
-use crate::ast::expressions::{Binary, BinaryOperator, Expression, Literal, Unary, UnaryOperator};
+use crate::ast::expressions::{
+    Binary, BinaryOperator, Expression, Identifier, Literal, Unary, UnaryOperator,
+};
 use crate::ast::LiteralValue::{False, Nil, NumberLiteral, StringLiteral, True};
 use crate::code_span::CodeSpan;
 use crate::parsing::try_parse;
@@ -128,6 +130,10 @@ fn parse_primary(tokens: &mut TokenStream) -> Result<Expression> {
     if let Some(token) = tokens.next() {
         let span = token.get_span();
         match token.consume() {
+            TokenType::Identifier(s) => Ok(Expression::Identifier(Identifier {
+                ident: s,
+                location: span,
+            })),
             TokenType::False => Ok(Expression::Literal(Literal::new(False, span))),
             TokenType::True => Ok(Expression::Literal(Literal::new(True, span))),
             TokenType::Nil => Ok(Expression::Literal(Literal::new(Nil, span))),
@@ -170,7 +176,8 @@ mod tests {
         "false",
         "nil",
         "\"hi\"",
-        "42"
+        "42",
+        "hello"
     );
 
     gen_tests!(
