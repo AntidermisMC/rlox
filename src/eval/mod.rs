@@ -13,6 +13,7 @@ use crate::ast::LiteralValue;
 use crate::code_span::CodeSpan;
 use crate::eval::RuntimeError::{DivisionByZero, MismatchedTypes};
 
+mod environment;
 mod runtime_error;
 mod types;
 
