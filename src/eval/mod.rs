@@ -1,4 +1,5 @@
 use std::collections::HashSet;
+use std::rc::Rc;
 
 use crate::ast::declarations::VariableDeclaration;
 use runtime_error::RuntimeError;
@@ -11,6 +12,7 @@ use crate::ast::expressions::{
 use crate::ast::statements::{Statement, StatementVisitor};
 use crate::ast::LiteralValue;
 use crate::code_span::CodeSpan;
+use crate::eval::environment::Environment;
 use crate::eval::RuntimeError::{DivisionByZero, MismatchedTypes};
 
 mod environment;
@@ -20,7 +22,17 @@ mod types;
 #[cfg(test)]
 mod tests;
 
-pub struct Evaluator {}
+pub struct Evaluator {
+    env: Environment,
+}
+
+impl Evaluator {
+    pub fn new() -> Self {
+        Evaluator {
+            env: Environment::new(),
+        }
+    }
+}
 
 pub type Result<T> = std::result::Result<T, RuntimeError>;
 
@@ -42,9 +54,9 @@ fn as_number(value: &Value) -> Result<f64> {
     }
 }
 
-fn as_string(value: &Value) -> Result<String> {
+fn as_string(value: &Value) -> Result<Rc<String>> {
     match &value.value {
-        ValueType::String(s) => Ok(s.clone()), // TODO remove cloning ?
+        ValueType::String(s) => Ok(s.clone()),
         t => Err(MismatchedTypes(
             value.location,
             t.as_type(),
@@ -56,7 +68,7 @@ fn as_string(value: &Value) -> Result<String> {
 impl StatementVisitor for Evaluator {
     type Return = Result<()>;
 
-    fn visit_statement(&self, stmt: &Statement) -> Self::Return {
+    fn visit_statement(&mut self, stmt: &Statement) -> Self::Return {
         match stmt {
             Statement::Print(expr) => self.visit_print(expr),
             Statement::Expression(expr) => expr.accept(self).map(|_| ()),
@@ -66,14 +78,16 @@ impl StatementVisitor for Evaluator {
         }
     }
 
-    fn visit_print(&self, expr: &Expression) -> Self::Return {
+    fn visit_print(&mut self, expr: &Expression) -> Self::Return {
         let value = expr.accept(self)?;
         print!("{}", value);
         Ok(())
     }
 
-    fn visit_variable_declaration(&self, decl: &VariableDeclaration) -> Self::Return {
-        todo!()
+    fn visit_variable_declaration(&mut self, decl: &VariableDeclaration) -> Self::Return {
+        let init = self.visit_expression(&decl.initializer)?;
+        self.env.define(decl.name.ident.to_string(), init.value);
+        Ok(())
     }
 }
 
@@ -81,62 +95,64 @@ impl ExpressionVisitor for Evaluator {
     type Return = Result<Value>;
 
     fn visit_literal(&self, literal: &Literal) -> Self::Return {
-        Ok(match &literal.value {
-            LiteralValue::StringLiteral(s) => {
-                Value::new(ValueType::String(s.clone()), literal.location)
-            }
-            LiteralValue::NumberLiteral(n) => Value::new(ValueType::Number(*n), literal.location),
-            LiteralValue::True => Value::new(ValueType::Boolean(true), literal.location),
-            LiteralValue::False => Value::new(ValueType::Boolean(false), literal.location),
-            LiteralValue::Nil => Value::new(ValueType::Nil, literal.location),
-        })
+        let value = (*literal).clone();
+        let value_type = match value.value {
+            LiteralValue::StringLiteral(s) => ValueType::String(Rc::new(s)),
+            LiteralValue::NumberLiteral(n) => ValueType::Number(n),
+            LiteralValue::True => ValueType::Boolean(true),
+            LiteralValue::False => ValueType::Boolean(false),
+            LiteralValue::Nil => ValueType::Nil,
+        };
+        Ok(Value::new(value_type, literal.location))
     }
 
     fn visit_unary(&self, unary: &Unary) -> Self::Return {
-        let value = self.visit_expression(unary.expr.as_ref())?;
-        match (unary.op, value.value) {
-            (UnaryOperator::Minus, ValueType::Number(n)) => {
-                Ok(Value::new(ValueType::Number(-n), unary.location))
-            }
+        let operand = self.visit_expression(unary.expr.as_ref())?;
+        let value_type = match (unary.op, operand.value) {
+            (UnaryOperator::Minus, ValueType::Number(n)) => Ok(ValueType::Number(-n)),
             (UnaryOperator::Minus, v) => Err(MismatchedTypes(
                 unary.location,
                 Type::from(&v),
                 HashSet::from([Type::Number]),
             )),
-            (UnaryOperator::Not, val) => Ok(Value::new(
-                ValueType::Boolean(!is_truthy(&val)),
-                value.location,
-            )),
-        }
+            (UnaryOperator::Not, val) => Ok(ValueType::Boolean(!is_truthy(&val))),
+        };
+        Ok(Value::new(value_type?, unary.location))
     }
 
     fn visit_binary(&self, binary: &Binary) -> Self::Return {
         let left = self.visit_expression(binary.left.as_ref())?;
         let right = self.visit_expression(binary.right.as_ref())?;
-        let span = CodeSpan::combine(left.location, right.location);
-        match binary.operator {
-            BinaryOperator::Addition => addition(left, right, span),
-            BinaryOperator::Subtraction => subtraction(left, right, span),
-            BinaryOperator::Multiplication => multiplication(left, right, span),
-            BinaryOperator::Division => division(left, right, span),
-            BinaryOperator::StrictInferiority => strict_inferiority(left, right, span),
-            BinaryOperator::Inferiority => inferiority(left, right, span),
-            BinaryOperator::StrictSuperiority => strict_superiority(left, right, span),
-            BinaryOperator::Superiority => superiority(left, right, span),
-            BinaryOperator::Equality => equality(left, right, span),
-            BinaryOperator::Inequality => inequality(left, right, span),
-        }
+        let value_type = match binary.operator {
+            BinaryOperator::Addition => addition(left, right),
+            BinaryOperator::Subtraction => subtraction(left, right),
+            BinaryOperator::Multiplication => multiplication(left, right),
+            BinaryOperator::Division => division(left, right),
+            BinaryOperator::StrictInferiority => strict_inferiority(left, right),
+            BinaryOperator::Inferiority => inferiority(left, right),
+            BinaryOperator::StrictSuperiority => strict_superiority(left, right),
+            BinaryOperator::Superiority => superiority(left, right),
+            BinaryOperator::Equality => equality(left, right),
+            BinaryOperator::Inequality => inequality(left, right),
+        };
+        Ok(Value::new(value_type?, binary.location))
     }
 
     fn visit_identifier(&self, identifier: &Identifier) -> Self::Return {
-        todo!()
+        match self.env.get(&identifier.ident) {
+            Some(value) => Ok(Value::new(value.clone(), identifier.location)),
+            None => Err(RuntimeError::UnboundName(
+                identifier.location,
+                identifier.ident.to_string(),
+            )),
+        }
     }
 }
 
-fn addition(left: Value, right: Value, span: CodeSpan) -> Result<Value> {
+fn addition(left: Value, right: Value) -> Result<ValueType> {
     if let Ok(l) = as_number(&left) {
         if let Ok(r) = as_number(&right) {
-            Ok(Value::new(ValueType::Number(l + r), span))
+            Ok(ValueType::Number(l + r))
         } else {
             Err(MismatchedTypes(
                 right.location,
@@ -146,9 +162,9 @@ fn addition(left: Value, right: Value, span: CodeSpan) -> Result<Value> {
         }
     } else if let Ok(l) = as_string(&left) {
         if let Ok(r) = as_string(&right) {
-            let mut l = l.clone();
+            let mut l = (*l).clone();
             l.push_str(&r);
-            Ok(Value::new(ValueType::String(l), span))
+            Ok(ValueType::String(Rc::new(l)))
         } else {
             Err(MismatchedTypes(
                 right.location,
@@ -165,63 +181,42 @@ fn addition(left: Value, right: Value, span: CodeSpan) -> Result<Value> {
     }
 }
 
-fn subtraction(left: Value, right: Value, span: CodeSpan) -> Result<Value> {
-    Ok(Value::new(
-        ValueType::Number(as_number(&left)? - as_number(&right)?),
-        span,
-    ))
+fn subtraction(left: Value, right: Value) -> Result<ValueType> {
+    Ok(ValueType::Number(as_number(&left)? - as_number(&right)?))
 }
 
-fn multiplication(left: Value, right: Value, span: CodeSpan) -> Result<Value> {
-    Ok(Value::new(
-        ValueType::Number(as_number(&left)? * as_number(&right)?),
-        span,
-    ))
+fn multiplication(left: Value, right: Value) -> Result<ValueType> {
+    Ok(ValueType::Number(as_number(&left)? * as_number(&right)?))
 }
 
-fn division(left: Value, right: Value, span: CodeSpan) -> Result<Value> {
+fn division(left: Value, right: Value) -> Result<ValueType> {
     if right.value == ValueType::Number(0.0) {
         return Err(DivisionByZero(CodeSpan::combine(
             left.location,
             right.location,
         )));
     }
-    Ok(Value::new(
-        ValueType::Number(as_number(&left)? / as_number(&right)?),
-        span,
-    ))
+    Ok(ValueType::Number(as_number(&left)? / as_number(&right)?))
 }
 
-fn strict_inferiority(left: Value, right: Value, span: CodeSpan) -> Result<Value> {
-    Ok(Value::new(
-        ValueType::Boolean(as_number(&left)? < as_number(&right)?),
-        span,
-    ))
+fn strict_inferiority(left: Value, right: Value) -> Result<ValueType> {
+    Ok(ValueType::Boolean(as_number(&left)? < as_number(&right)?))
 }
 
-fn strict_superiority(left: Value, right: Value, span: CodeSpan) -> Result<Value> {
-    Ok(Value::new(
-        ValueType::Boolean(as_number(&left)? > as_number(&right)?),
-        span,
-    ))
+fn strict_superiority(left: Value, right: Value) -> Result<ValueType> {
+    Ok(ValueType::Boolean(as_number(&left)? > as_number(&right)?))
 }
 
-fn inferiority(left: Value, right: Value, span: CodeSpan) -> Result<Value> {
-    Ok(Value::new(
-        ValueType::Boolean(as_number(&left)? <= as_number(&right)?),
-        span,
-    ))
+fn inferiority(left: Value, right: Value) -> Result<ValueType> {
+    Ok(ValueType::Boolean(as_number(&left)? <= as_number(&right)?))
 }
 
-fn superiority(left: Value, right: Value, span: CodeSpan) -> Result<Value> {
-    Ok(Value::new(
-        ValueType::Boolean(as_number(&left)? >= as_number(&right)?),
-        span,
-    ))
+fn superiority(left: Value, right: Value) -> Result<ValueType> {
+    Ok(ValueType::Boolean(as_number(&left)? >= as_number(&right)?))
 }
 
-fn test_equality(left: &ValueType, right: &ValueType) -> bool {
-    match (left, right) {
+fn test_equality(left: &Value, right: &Value) -> bool {
+    match (&left.value, &right.value) {
         (ValueType::Boolean(l), ValueType::Boolean(r)) => l == r,
         (ValueType::Nil, ValueType::Nil) => true,
         (ValueType::Number(l), ValueType::Number(r)) => l == r,
@@ -231,12 +226,12 @@ fn test_equality(left: &ValueType, right: &ValueType) -> bool {
     }
 }
 
-fn equality(left: Value, right: Value, span: CodeSpan) -> Result<Value> {
-    let val = test_equality(&left.value, &right.value);
-    Ok(Value::new(ValueType::Boolean(val), span))
+fn equality(left: Value, right: Value) -> Result<ValueType> {
+    let val = test_equality(&left, &right);
+    Ok(ValueType::Boolean(val))
 }
 
-fn inequality(left: Value, right: Value, span: CodeSpan) -> Result<Value> {
-    let val = !test_equality(&left.value, &right.value);
-    Ok(Value::new(ValueType::Boolean(val), span))
+fn inequality(left: Value, right: Value) -> Result<ValueType> {
+    let val = !test_equality(&left, &right);
+    Ok(ValueType::Boolean(val))
 }

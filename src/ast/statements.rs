@@ -44,7 +44,7 @@ impl Display for Statement {
 pub trait StatementVisitor {
     type Return;
 
-    fn visit_statement(&self, stmt: &Statement) -> Self::Return;
-    fn visit_print(&self, expr: &Expression) -> Self::Return;
-    fn visit_variable_declaration(&self, decl: &VariableDeclaration) -> Self::Return;
+    fn visit_statement(&mut self, stmt: &Statement) -> Self::Return;
+    fn visit_print(&mut self, expr: &Expression) -> Self::Return;
+    fn visit_variable_declaration(&mut self, decl: &VariableDeclaration) -> Self::Return;
 }

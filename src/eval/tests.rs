@@ -4,11 +4,15 @@ use crate::eval::types::{ValueType, ValueType::*};
 use crate::eval::Evaluator;
 use crate::parsing::parse_expression;
 use crate::scanning::TokenStream;
+use std::rc::Rc;
 
 fn assert_eval(code: &str, result: ValueType) {
     let mut tokens = TokenStream::new(code);
     let tree = parse_expression(&mut tokens).unwrap();
-    assert_eq!(Evaluator {}.visit_expression(&tree).unwrap().value, result);
+    assert_eq!(
+        Evaluator::new().visit_expression(&tree).unwrap().value,
+        result
+    );
 }
 
 macro_rules! gen_tests {
@@ -24,8 +28,8 @@ macro_rules! gen_tests {
 
 gen_tests!(literals,
     { "1",          Number(1.0)                 },
-    { "\"\"",       String("".to_string())      },
-    { "\"hello\"",  String("hello".to_string()) },
+    { "\"\"",       String(Rc::new("".to_string()))      },
+    { "\"hello\"",  String(Rc::new("hello".to_string())) },
     { "nil",        Nil                         },
     { "true",       Boolean(true)               },
     { "false",      Boolean(false)              }
@@ -42,8 +46,8 @@ gen_tests!(unary,
 );
 
 gen_tests!(string_concat,
-    { r#""" + """#,             String("".to_string()) },
-    { r#""Hello," + " World""#, String("Hello, World".to_string()) }
+    { r#""" + """#,             String(Rc::new("".to_string())) },
+    { r#""Hello," + " World""#, String(Rc::new("Hello, World".to_string())) }
 );
 
 gen_tests!(arithmetic_binary_operators,
@@ -102,7 +106,7 @@ gen_tests!(inequality_same_types,
 );
 
 gen_tests!(complex_expressions,
-    { r#""a" + "b" + "c""#, String("abc".to_string()) },
+    { r#""a" + "b" + "c""#, String(Rc::new("abc".to_string())) },
     { "!true != !false",    Boolean(true)             },
     { "4 + 3 == 14 / 2",    Boolean(true)             },
     { "1 + 2 * 3 == 7",     Boolean(true)             },

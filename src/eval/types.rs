@@ -1,10 +1,11 @@
 use crate::code_span::CodeSpan;
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
+use std::rc::Rc;
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
 pub enum ValueType {
-    String(String),
+    String(Rc<String>),
     Number(f64),
     Boolean(bool),
     Nil,
@@ -26,7 +27,7 @@ pub enum Type {
     Object,
 }
 
-pub type Object = HashMap<String, Value>;
+pub type Object = Rc<HashMap<String, Value>>;
 
 impl ValueType {
     pub fn as_type(&self) -> Type {

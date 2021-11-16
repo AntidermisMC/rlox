@@ -10,6 +10,7 @@ pub enum Expression {
     Identifier(Identifier),
 }
 
+#[derive(Clone)]
 pub struct Literal {
     pub value: LiteralValue,
     pub location: CodeSpan,
