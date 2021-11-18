@@ -8,7 +8,7 @@ use crate::parsing::{parse, parse_expression};
 use crate::scanning::TokenStream;
 use std::rc::Rc;
 
-fn assert_eval(code: &str, result: ValueType) {
+fn assert_eval_expr(code: &str, result: ValueType) {
     let mut tokens = TokenStream::new(code);
     let tree = parse_expression(&mut tokens).unwrap();
     assert_eq!(
@@ -20,18 +20,18 @@ fn assert_eval(code: &str, result: ValueType) {
     );
 }
 
-macro_rules! gen_tests {
+macro_rules! gen_tests_expr {
     ($name:ident, $({ $case:expr, $expected:expr }),*) => {
         #[test]
         fn $name() {
             $(
-            assert_eval($case, $expected);
+            assert_eval_expr($case, $expected);
             )*
         }
     };
 }
 
-gen_tests!(literals,
+gen_tests_expr!(literals,
     { "1",          Number(1.0)                 },
     { "\"\"",       String(Rc::new("".to_string()))      },
     { "\"hello\"",  String(Rc::new("hello".to_string())) },
@@ -40,7 +40,7 @@ gen_tests!(literals,
     { "false",      Boolean(false)              }
 );
 
-gen_tests!(unary,
+gen_tests_expr!(unary,
     { "-3",          Number(-3.0)   },
     { "--3",         Number(3.0)    },
     { "!true",       Boolean(false) },
@@ -50,12 +50,12 @@ gen_tests!(unary,
     { "!nil",        Boolean(true)  }
 );
 
-gen_tests!(string_concat,
+gen_tests_expr!(string_concat,
     { r#""" + """#,             String(Rc::new("".to_string())) },
     { r#""Hello," + " World""#, String(Rc::new("Hello, World".to_string())) }
 );
 
-gen_tests!(arithmetic_binary_operators,
+gen_tests_expr!(arithmetic_binary_operators,
     { "1 + 1", Number(2.0) },
     { "1 - 1", Number(0.0) },
     { "1 * 1", Number(1.0) },
@@ -67,7 +67,7 @@ gen_tests!(arithmetic_binary_operators,
     { "0 / 1", Number(0.0) }
 );
 
-gen_tests!(comparison_binary_operators,
+gen_tests_expr!(comparison_binary_operators,
     { "1 < 0",  Boolean(false) },
     { "1 < 1",  Boolean(false) },
     { "1 < 2",  Boolean(true)  },
@@ -82,7 +82,7 @@ gen_tests!(comparison_binary_operators,
     { "1 >= 2", Boolean(false) }
 );
 
-gen_tests!(equality_same_types,
+gen_tests_expr!(equality_same_types,
     { "1 == 1",              Boolean(true)  },
     { "1 == 2",              Boolean(false) },
     { "nil == nil",          Boolean(true)  },
@@ -96,7 +96,7 @@ gen_tests!(equality_same_types,
     { r#""hey" == "hello""#, Boolean(false) }
 );
 
-gen_tests!(inequality_same_types,
+gen_tests_expr!(inequality_same_types,
     { "1 != 1",              Boolean(false) },
     { "1 != 2",              Boolean(true)  },
     { "nil != nil",          Boolean(false) },
@@ -110,7 +110,7 @@ gen_tests!(inequality_same_types,
     { r#""hey" != "hello""#, Boolean(true)  }
 );
 
-gen_tests!(complex_expressions,
+gen_tests_expr!(complex_expressions,
     { r#""a" + "b" + "c""#, String(Rc::new("abc".to_string())) },
     { "!true != !false",    Boolean(true)             },
     { "4 + 3 == 14 / 2",    Boolean(true)             },
@@ -119,20 +119,33 @@ gen_tests!(complex_expressions,
     { " 1 < 2 == 3 >= 0",   Boolean(true)             }
 );
 
-#[test]
-fn print() {
-    let code = r#"print "Hello World !";
-    print 42;
-    print true;
-    print 1 + (2 * 3);"#;
+fn assert_eval_stmts(code: &str, expected: &str) {
     let statements = parse(&mut TokenStream::new(code)).unwrap();
     let mut evaluator = Evaluator::new(OutputStream::File(std::string::String::new()));
     for stmt in statements {
         evaluator.visit_statement(&stmt).unwrap();
     }
     if let OutputStream::File(s) = &evaluator.out {
-        assert_eq!(s, "Hello World !42true7");
+        assert_eq!(s, expected);
     } else {
         assert!(false, "OutputStream is not a String !");
     }
 }
+
+macro_rules! gen_tests {
+    ($ident:ident, $code:expr, $expected:expr) => {
+        #[test]
+        fn $ident() {
+            assert_eval_stmts($code, $expected);
+        }
+    };
+}
+
+gen_tests!(
+    print,
+    r#"print "Hello World !";
+    print 42;
+    print true;
+    print 1 + (2 * 3);"#,
+    "Hello World !42true7"
+);
