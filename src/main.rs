@@ -2,6 +2,7 @@ use std::env;
 use std::io::{Read, Write};
 
 use crate::ast::statements::StatementVisitor;
+use crate::eval::out::OutputStream;
 
 use crate::scanning::TokenStream;
 
@@ -40,7 +41,7 @@ fn run_prompt() -> std::io::Result<u8> {
         if input == "" {
             return Ok(0);
         }
-        run(&mut input);
+        run(&mut input, OutputStream::StdOut(std::io::stdout()));
     }
 }
 
@@ -49,19 +50,20 @@ fn run_file(file_name: &str) -> std::io::Result<u8> {
     let mut file = std::fs::File::open(file_name)?;
     let mut code = String::new();
     file.read_to_string(&mut code)?;
-    run(&mut code);
+    run(&mut code, OutputStream::StdOut(std::io::stdout()));
     Ok(0)
 }
 
 /// Runs a single line of code.
-fn run(code: &mut str) -> Option<u8> {
+fn run(code: &mut str, out: OutputStream) -> Option<u8> {
     let mut tokens = TokenStream::new(code);
     let tree = parsing::parse(&mut tokens);
+    let mut evaluator = eval::Evaluator::new(out);
     match tree {
         Err(e) => print!("{}", e),
         Ok(stmts) => {
             for stmt in stmts {
-                let res = eval::Evaluator::new().visit_statement(&stmt);
+                let res = evaluator.visit_statement(&stmt);
                 match res {
                     Ok(_) => (),
                     Err(e) => print!("{}", e),

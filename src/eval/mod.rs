@@ -1,4 +1,5 @@
 use std::collections::HashSet;
+use std::fmt::Write;
 use std::rc::Rc;
 
 use crate::ast::declarations::VariableDeclaration;
@@ -13,9 +14,11 @@ use crate::ast::statements::{Statement, StatementVisitor};
 use crate::ast::LiteralValue;
 use crate::code_span::CodeSpan;
 use crate::eval::environment::Environment;
+use crate::eval::out::OutputStream;
 use crate::eval::RuntimeError::{DivisionByZero, MismatchedTypes};
 
 mod environment;
+pub mod out;
 mod runtime_error;
 mod types;
 
@@ -24,12 +27,14 @@ mod tests;
 
 pub struct Evaluator {
     env: Environment,
+    out: OutputStream,
 }
 
 impl Evaluator {
-    pub fn new() -> Self {
+    pub fn new(out: OutputStream) -> Self {
         Evaluator {
             env: Environment::new(),
+            out,
         }
     }
 }
@@ -80,7 +85,7 @@ impl StatementVisitor for Evaluator {
 
     fn visit_print(&mut self, expr: &Expression) -> Self::Return {
         let value = expr.accept(self)?;
-        print!("{}", value);
+        write!(self.out, "{}", value).map_err(|_| RuntimeError::WriteError(expr.get_location()))?;
         Ok(())
     }
 

@@ -1,4 +1,5 @@
 use crate::ast::expressions::ExpressionVisitor;
+use crate::eval::out::OutputStream;
 use crate::eval::types::ValueType::Number;
 use crate::eval::types::{ValueType, ValueType::*};
 use crate::eval::Evaluator;
@@ -10,7 +11,10 @@ fn assert_eval(code: &str, result: ValueType) {
     let mut tokens = TokenStream::new(code);
     let tree = parse_expression(&mut tokens).unwrap();
     assert_eq!(
-        Evaluator::new().visit_expression(&tree).unwrap().value,
+        Evaluator::new(OutputStream::File(std::string::String::new()))
+            .visit_expression(&tree)
+            .unwrap()
+            .value,
         result
     );
 }
@@ -113,3 +117,8 @@ gen_tests!(complex_expressions,
     { "(1 + 2) * 3 == 9",   Boolean(true)             },
     { " 1 < 2 == 3 >= 0",   Boolean(true)             }
 );
+
+#[test]
+fn variable_declaration() {
+    let code = "";
+}

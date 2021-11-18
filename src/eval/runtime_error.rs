@@ -12,6 +12,7 @@ pub enum RuntimeError {
     MismatchedTypes(CodeSpan, Type, HashSet<Type>),
     DivisionByZero(CodeSpan),
     UnboundName(CodeSpan, String),
+    WriteError(CodeSpan),
 }
 
 impl RuntimeError {
@@ -20,6 +21,7 @@ impl RuntimeError {
             RuntimeError::MismatchedTypes(span, _, _) => span,
             RuntimeError::DivisionByZero(span) => span,
             RuntimeError::UnboundName(span, _) => span,
+            RuntimeError::WriteError(span) => span,
         }
     }
 }
@@ -30,6 +32,7 @@ impl Display for RuntimeError {
             &RuntimeError::MismatchedTypes(_, _, _) => "Mismatched Type".to_string(),
             &RuntimeError::DivisionByZero(_) => "Division by zero".to_string(),
             &RuntimeError::UnboundName(_, ident) => format!("Unbound name {}", ident),
+            &RuntimeError::WriteError(_) => "Write failed".to_string(),
         };
         write!(f, "{}: {}", self.location(), error_type)
     }
