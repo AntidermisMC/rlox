@@ -1,9 +1,10 @@
 use crate::ast::expressions::ExpressionVisitor;
+use crate::ast::statements::StatementVisitor;
 use crate::eval::out::OutputStream;
 use crate::eval::types::ValueType::Number;
 use crate::eval::types::{ValueType, ValueType::*};
 use crate::eval::Evaluator;
-use crate::parsing::parse_expression;
+use crate::parsing::{parse, parse_expression};
 use crate::scanning::TokenStream;
 use std::rc::Rc;
 
@@ -119,6 +120,19 @@ gen_tests!(complex_expressions,
 );
 
 #[test]
-fn variable_declaration() {
-    let code = "";
+fn print() {
+    let code = r#"print "Hello World !";
+    print 42;
+    print true;
+    print 1 + (2 * 3);"#;
+    let statements = parse(&mut TokenStream::new(code)).unwrap();
+    let mut evaluator = Evaluator::new(OutputStream::File(std::string::String::new()));
+    for stmt in statements {
+        evaluator.visit_statement(&stmt).unwrap();
+    }
+    if let OutputStream::File(s) = &evaluator.out {
+        assert_eq!(s, "Hello World !42true7");
+    } else {
+        assert!(false, "OutputStream is not a String !");
+    }
 }
