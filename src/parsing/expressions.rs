@@ -1,5 +1,5 @@
 use crate::ast::expressions::{
-    Binary, BinaryOperator, Expression, Identifier, Literal, Unary, UnaryOperator,
+    Assignment, Binary, BinaryOperator, Expression, Identifier, Literal, Unary, UnaryOperator,
 };
 use crate::ast::LiteralValue::{False, Nil, NumberLiteral, StringLiteral, True};
 use crate::code_span::CodeSpan;
@@ -11,6 +11,29 @@ use std::convert::TryFrom;
 
 pub fn parse_expression(tokens: &mut TokenStream) -> Result<Expression> {
     parse_equality(tokens)
+}
+
+fn parse_assignment(tokens: &mut TokenStream) -> Result<Expression> {
+    let expr = parse_equality(tokens)?;
+
+    if let Some(token) = tokens.peek() {
+        if token.is_of_type(TokenType::Equal) {
+            tokens.next();
+            let init = parse_expression(tokens)?;
+            let span = CodeSpan::new(expr.get_location().start, init.get_location().end);
+            return if let Expression::Identifier(ident) = expr {
+                Ok(Expression::Assignment(Assignment {
+                    ident,
+                    expr: Box::new(init),
+                    location: span,
+                }))
+            } else {
+                Err(ParsingError::InvalidAssignmentTarget(span))
+            };
+        }
+    }
+
+    Ok(expr)
 }
 
 fn parse_equality(tokens: &mut TokenStream) -> Result<Expression> {
@@ -231,5 +254,13 @@ mod tests {
         "1 == 1",
         "1 + 1 != 1",
         "true == !false"
+    );
+
+    gen_tests!(
+        assignment,
+        parse_assignment,
+        "a = 1",
+        "b = a + 1",
+        "c = true == a != nil"
     );
 }

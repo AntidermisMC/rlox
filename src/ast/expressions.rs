@@ -51,9 +51,9 @@ pub enum BinaryOperator {
 }
 
 pub struct Assignment {
-    ident: Identifier,
-    expr: Box<Expression>,
-    location: CodeSpan,
+    pub ident: Identifier,
+    pub expr: Box<Expression>,
+    pub location: CodeSpan,
 }
 
 pub struct Identifier {
