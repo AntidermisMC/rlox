@@ -162,3 +162,9 @@ gen_tests!(
 );
 
 gen_tests!(variables_no_assignment, "var myvar; print myvar;", "nil");
+
+gen_tests!(
+    variable_shadowing,
+    "var myvar = 1; var myvar = 2; print myvar;",
+    "2"
+);
