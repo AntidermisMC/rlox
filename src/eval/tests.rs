@@ -149,3 +149,14 @@ gen_tests!(
     print 1 + (2 * 3);"#,
     "Hello World !42true7"
 );
+
+gen_tests!(
+    variables,
+    "\
+    var myvar = 1;
+    var othervar = 2;
+    var lastvar = myvar + othervar;
+    print lastvar;
+    ",
+    "3"
+);
