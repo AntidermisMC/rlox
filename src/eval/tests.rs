@@ -160,3 +160,5 @@ gen_tests!(
     ",
     "3"
 );
+
+gen_tests!(variables_no_assignment, "var myvar; print myvar;", "nil");
