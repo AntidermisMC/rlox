@@ -8,6 +8,7 @@ pub enum Expression {
     UnaryOperation(Unary),
     BinaryOperation(Binary),
     Identifier(Identifier),
+    Assignment(Assignment),
 }
 
 #[derive(Clone)]
@@ -49,6 +50,12 @@ pub enum BinaryOperator {
     Division,
 }
 
+pub struct Assignment {
+    ident: Identifier,
+    expr: Box<Expression>,
+    location: CodeSpan,
+}
+
 pub struct Identifier {
     pub ident: String,
     pub location: CodeSpan,
@@ -61,6 +68,7 @@ impl Expression {
             Expression::UnaryOperation(u) => u.location,
             Expression::BinaryOperation(b) => b.location,
             Expression::Identifier(i) => i.location,
+            Expression::Assignment(a) => a.location,
         }
     }
 }
@@ -78,16 +86,16 @@ pub trait Priority {
 impl Priority for BinaryOperator {
     fn priority(&self) -> u8 {
         match self {
-            BinaryOperator::Equality => 0,
-            BinaryOperator::Inequality => 0,
-            BinaryOperator::StrictInferiority => 1,
-            BinaryOperator::Inferiority => 1,
-            BinaryOperator::StrictSuperiority => 1,
-            BinaryOperator::Superiority => 1,
-            BinaryOperator::Addition => 2,
-            BinaryOperator::Subtraction => 2,
-            BinaryOperator::Multiplication => 3,
-            BinaryOperator::Division => 3,
+            BinaryOperator::Equality => 1,
+            BinaryOperator::Inequality => 1,
+            BinaryOperator::StrictInferiority => 2,
+            BinaryOperator::Inferiority => 2,
+            BinaryOperator::StrictSuperiority => 2,
+            BinaryOperator::Superiority => 2,
+            BinaryOperator::Addition => 3,
+            BinaryOperator::Subtraction => 3,
+            BinaryOperator::Multiplication => 4,
+            BinaryOperator::Division => 4,
         }
     }
 }
@@ -100,7 +108,7 @@ impl Priority for Binary {
 
 impl Priority for UnaryOperator {
     fn priority(&self) -> u8 {
-        4
+        5
     }
 }
 
@@ -112,13 +120,19 @@ impl Priority for Unary {
 
 impl Priority for Literal {
     fn priority(&self) -> u8 {
-        5
+        6
     }
 }
 
 impl Priority for Identifier {
     fn priority(&self) -> u8 {
-        5
+        6
+    }
+}
+
+impl Priority for Assignment {
+    fn priority(&self) -> u8 {
+        0
     }
 }
 
@@ -129,6 +143,7 @@ impl Priority for Expression {
             Expression::UnaryOperation(u) => u.priority(),
             Expression::BinaryOperation(b) => b.operator.priority(),
             Expression::Identifier(i) => i.priority(),
+            Expression::Assignment(a) => a.priority(),
         }
     }
 }
@@ -160,6 +175,12 @@ impl ExpressionNode for Binary {
 impl ExpressionNode for Identifier {
     fn accept<T: ExpressionVisitor>(&self, visitor: &T) -> T::Return {
         visitor.visit_identifier(self)
+    }
+}
+
+impl ExpressionNode for Assignment {
+    fn accept<T: ExpressionVisitor>(&self, visitor: &T) -> T::Return {
+        visitor.visit_assignment(self)
     }
 }
 
@@ -232,6 +253,12 @@ impl Display for Literal {
     }
 }
 
+impl Display for Assignment {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{} = {}", self.ident.ident, self.expr)
+    }
+}
+
 impl Display for Expression {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -239,6 +266,7 @@ impl Display for Expression {
             Self::BinaryOperation(b) => write!(f, "{}", b),
             Self::UnaryOperation(u) => write!(f, "{}", u),
             Self::Identifier(i) => write!(f, "{}", i.ident),
+            Self::Assignment(a) => write!(f, "{}", a),
         }
     }
 }
@@ -256,6 +284,7 @@ pub trait ExpressionVisitor: Sized {
             Expression::UnaryOperation(u) => u.accept(self),
             Expression::BinaryOperation(b) => b.accept(self),
             Expression::Identifier(i) => i.accept(self),
+            Expression::Assignment(a) => a.accept(self),
         }
     }
 
@@ -263,4 +292,5 @@ pub trait ExpressionVisitor: Sized {
     fn visit_unary(&self, unary: &Unary) -> Self::Return;
     fn visit_binary(&self, binary: &Binary) -> Self::Return;
     fn visit_identifier(&self, identifier: &Identifier) -> Self::Return;
+    fn visit_assignment(&self, assignment: &Assignment) -> Self::Return;
 }
