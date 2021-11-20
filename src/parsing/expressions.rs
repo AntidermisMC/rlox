@@ -10,7 +10,7 @@ use crate::scanning::{Token, TokenStream, TokenType};
 use std::convert::TryFrom;
 
 pub fn parse_expression(tokens: &mut TokenStream) -> Result<Expression> {
-    parse_equality(tokens)
+    parse_assignment(tokens)
 }
 
 fn parse_assignment(tokens: &mut TokenStream) -> Result<Expression> {
@@ -19,7 +19,7 @@ fn parse_assignment(tokens: &mut TokenStream) -> Result<Expression> {
     if let Some(token) = tokens.peek() {
         if token.is_of_type(TokenType::Equal) {
             tokens.next();
-            let init = parse_expression(tokens)?;
+            let init = parse_assignment(tokens)?;
             let span = CodeSpan::new(expr.get_location().start, init.get_location().end);
             return if let Expression::Identifier(ident) = expr {
                 Ok(Expression::Assignment(Assignment {
@@ -262,5 +262,12 @@ mod tests {
         "a = 1",
         "b = a + 1",
         "c = true == a != nil"
+    );
+
+    gen_tests!(
+        multiple_assignments,
+        parse_assignment,
+        "a = b = 1",
+        "c = d + (e = 3)"
     );
 }
