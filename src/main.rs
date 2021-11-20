@@ -62,7 +62,7 @@ fn run(code: &mut str, out: OutputStream) -> Option<u8> {
     match tree {
         Err(e) => print!("{}", e),
         Ok(stmts) => {
-            for stmt in stmts {
+            for stmt in &stmts.stmts {
                 let res = evaluator.visit_statement(&stmt);
                 match res {
                     Ok(_) => (),

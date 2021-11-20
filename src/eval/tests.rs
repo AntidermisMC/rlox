@@ -122,7 +122,7 @@ gen_tests_expr!(complex_expressions,
 fn assert_eval_stmts(code: &str, expected: &str) {
     let statements = parse(&mut TokenStream::new(code)).unwrap();
     let mut evaluator = Evaluator::new(OutputStream::File(std::string::String::new()));
-    for stmt in statements {
+    for stmt in &statements.stmts {
         evaluator.visit_statement(&stmt).unwrap();
     }
     if let OutputStream::File(s) = &evaluator.out {
@@ -164,9 +164,19 @@ gen_tests!(
 gen_tests!(variables_no_assignment, "var myvar; print myvar;", "nil");
 
 gen_tests!(
-    variable_shadowing,
+    variable_overwrite,
     "var myvar = 1; var myvar = 2; print myvar;",
     "2"
 );
 
 gen_tests!(variable_assignment, "var myvar; myvar = 3; print myvar; var othervar = 1; othervar = myvar + othervar; print othervar;", "34");
+
+gen_tests!(blocks, "print 1; { print 2; } print 3;", "123");
+
+gen_tests!(scope, "var a = 1; { print a; }", "1");
+
+gen_tests!(
+    variable_shadowing,
+    "var a = 1; { var a = 2; print a; } print a;",
+    "21"
+);

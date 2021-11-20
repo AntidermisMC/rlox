@@ -80,7 +80,14 @@ impl StatementVisitor for Evaluator {
             Statement::VariableDeclaration(declaration) => {
                 self.visit_variable_declaration(declaration)
             }
-            Statement::Block(stmts) => todo!("block evaluation"),
+            Statement::Block(stmts) => {
+                self.env.push_env();
+                for stmt in &stmts.stmts {
+                    self.visit_statement(&stmt)?;
+                }
+                self.env.pop_env();
+                Ok(())
+            }
         }
     }
 

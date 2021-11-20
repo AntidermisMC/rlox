@@ -1,7 +1,6 @@
 use crate::ast::declarations::VariableDeclaration;
 use crate::ast::expressions::Expression;
 use std::fmt::{Display, Formatter};
-use std::vec::IntoIter;
 
 pub enum Statement {
     Print(Expression),
@@ -20,15 +19,6 @@ impl Display for Statements {
             write!(f, "{}\n", stmt)?
         }
         Ok(())
-    }
-}
-
-impl IntoIterator for Statements {
-    type Item = Statement;
-    type IntoIter = IntoIter<Statement>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        self.stmts.into_iter()
     }
 }
 

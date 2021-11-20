@@ -15,6 +15,14 @@ impl Environment {
         }
     }
 
+    pub fn push_env(&mut self) {
+        self.stack.push(HashMap::new());
+    }
+
+    pub fn pop_env(&mut self) {
+        self.stack.pop();
+    }
+
     pub fn define(&mut self, identifier: String, value: ValueType) {
         if let Some(map) = self.stack.first_mut() {
             map.insert(identifier, value);
