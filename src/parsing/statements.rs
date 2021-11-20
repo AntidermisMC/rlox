@@ -1,14 +1,15 @@
 use super::parsing_error::ParsingError;
 use super::Result;
-use crate::ast::statements::Statement;
+use crate::ast::statements::{Statement, Statements};
 use crate::parsing::consume;
+use crate::parsing::declarations::parse_declaration;
 use crate::parsing::expressions::parse_expression;
 use crate::scanning::{TokenStream, TokenType};
 
-pub fn parse_statements(tokens: &mut TokenStream) -> Vec<Statement> {
+pub fn parse_declarations(tokens: &mut TokenStream) -> Vec<Statement> {
     let mut stmts = Vec::new();
 
-    while let Ok(stmt) = parse_statement(tokens) {
+    while let Ok(stmt) = parse_declaration(tokens) {
         stmts.push(stmt);
     }
     stmts
@@ -19,15 +20,29 @@ pub fn parse_statement(tokens: &mut TokenStream) -> Result<Statement> {
         None => Err(ParsingError::UnexpectedEndOfTokenStream(
             tokens.current_position(),
         )),
-        Some(t) => {
-            if let TokenType::Print = t.get_type() {
-                parse_print(tokens)
-            } else {
+        Some(t) => match t.get_type() {
+            TokenType::Print => parse_print(tokens),
+            TokenType::LeftBrace => {
+                tokens.next();
+                let stmts = parse_declarations(tokens);
+                if let Some(rbrace) = tokens.next() {
+                    if rbrace.is_of_type(TokenType::RightBrace) {
+                        Ok(Statement::Block(Statements { stmts }))
+                    } else {
+                        Err(ParsingError::UnexpectedToken(rbrace))
+                    }
+                } else {
+                    Err(ParsingError::UnexpectedEndOfTokenStream(
+                        tokens.current_position(),
+                    ))
+                }
+            }
+            _ => {
                 let expr = parse_expression(tokens)?;
                 consume(tokens, TokenType::Semicolon)?;
                 Ok(Statement::Expression(expr))
             }
-        }
+        },
     }
 }
 
@@ -67,5 +82,13 @@ mod tests {
         "1;",
         "print 2;",
         "print 1 + 1;"
+    );
+
+    gen_tests!(
+        test_blocks,
+        parse_statement,
+        "{\n}",
+        "{\nprint 3;\n}",
+        "{\nvar x = 42;\nprint x;\n}"
     );
 }
