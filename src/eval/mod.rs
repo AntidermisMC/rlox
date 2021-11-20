@@ -99,7 +99,7 @@ impl StatementVisitor for Evaluator {
 impl ExpressionVisitor for Evaluator {
     type Return = Result<Value>;
 
-    fn visit_literal(&self, literal: &Literal) -> Self::Return {
+    fn visit_literal(&mut self, literal: &Literal) -> Self::Return {
         let value = (*literal).clone();
         let value_type = match value.value {
             LiteralValue::StringLiteral(s) => ValueType::String(Rc::new(s)),
@@ -111,7 +111,7 @@ impl ExpressionVisitor for Evaluator {
         Ok(Value::new(value_type, literal.location))
     }
 
-    fn visit_unary(&self, unary: &Unary) -> Self::Return {
+    fn visit_unary(&mut self, unary: &Unary) -> Self::Return {
         let operand = self.visit_expression(unary.expr.as_ref())?;
         let value_type = match (unary.op, operand.value) {
             (UnaryOperator::Minus, ValueType::Number(n)) => Ok(ValueType::Number(-n)),
@@ -125,7 +125,7 @@ impl ExpressionVisitor for Evaluator {
         Ok(Value::new(value_type?, unary.location))
     }
 
-    fn visit_binary(&self, binary: &Binary) -> Self::Return {
+    fn visit_binary(&mut self, binary: &Binary) -> Self::Return {
         let left = self.visit_expression(binary.left.as_ref())?;
         let right = self.visit_expression(binary.right.as_ref())?;
         let value_type = match binary.operator {
@@ -143,7 +143,7 @@ impl ExpressionVisitor for Evaluator {
         Ok(Value::new(value_type?, binary.location))
     }
 
-    fn visit_identifier(&self, identifier: &Identifier) -> Self::Return {
+    fn visit_identifier(&mut self, identifier: &Identifier) -> Self::Return {
         match self.env.get(&identifier.ident) {
             Some(value) => Ok(Value::new(value.clone(), identifier.location)),
             None => Err(RuntimeError::UnboundName(
@@ -153,8 +153,11 @@ impl ExpressionVisitor for Evaluator {
         }
     }
 
-    fn visit_assignment(&self, assignment: &Assignment) -> Self::Return {
-        todo!()
+    fn visit_assignment(&mut self, assignment: &Assignment) -> Self::Return {
+        let expr = self.visit_expression(&assignment.expr)?;
+        self.env
+            .assign(assignment.ident.ident.clone(), expr.clone())?;
+        Ok(expr)
     }
 }
 

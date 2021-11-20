@@ -168,3 +168,5 @@ gen_tests!(
     "var myvar = 1; var myvar = 2; print myvar;",
     "2"
 );
+
+gen_tests!(variable_assignment, "var myvar; myvar = 3; print myvar; var othervar = 1; othervar = myvar + othervar; print othervar;", "34");

@@ -149,37 +149,37 @@ impl Priority for Expression {
 }
 
 impl ExpressionNode for Expression {
-    fn accept<T: ExpressionVisitor>(&self, visitor: &T) -> T::Return {
+    fn accept<T: ExpressionVisitor>(&self, visitor: &mut T) -> T::Return {
         visitor.visit_expression(self)
     }
 }
 
 impl ExpressionNode for Literal {
-    fn accept<T: ExpressionVisitor>(&self, visitor: &T) -> T::Return {
+    fn accept<T: ExpressionVisitor>(&self, visitor: &mut T) -> T::Return {
         visitor.visit_literal(self)
     }
 }
 
 impl ExpressionNode for Unary {
-    fn accept<T: ExpressionVisitor>(&self, visitor: &T) -> T::Return {
+    fn accept<T: ExpressionVisitor>(&self, visitor: &mut T) -> T::Return {
         visitor.visit_unary(self)
     }
 }
 
 impl ExpressionNode for Binary {
-    fn accept<T: ExpressionVisitor>(&self, visitor: &T) -> T::Return {
+    fn accept<T: ExpressionVisitor>(&self, visitor: &mut T) -> T::Return {
         visitor.visit_binary(self)
     }
 }
 
 impl ExpressionNode for Identifier {
-    fn accept<T: ExpressionVisitor>(&self, visitor: &T) -> T::Return {
+    fn accept<T: ExpressionVisitor>(&self, visitor: &mut T) -> T::Return {
         visitor.visit_identifier(self)
     }
 }
 
 impl ExpressionNode for Assignment {
-    fn accept<T: ExpressionVisitor>(&self, visitor: &T) -> T::Return {
+    fn accept<T: ExpressionVisitor>(&self, visitor: &mut T) -> T::Return {
         visitor.visit_assignment(self)
     }
 }
@@ -272,13 +272,13 @@ impl Display for Expression {
 }
 
 pub trait ExpressionNode {
-    fn accept<T: ExpressionVisitor>(&self, visitor: &T) -> T::Return;
+    fn accept<T: ExpressionVisitor>(&self, visitor: &mut T) -> T::Return;
 }
 
 pub trait ExpressionVisitor: Sized {
     type Return;
 
-    fn visit_expression(&self, expr: &Expression) -> Self::Return {
+    fn visit_expression(&mut self, expr: &Expression) -> Self::Return {
         match expr {
             Expression::Literal(l) => l.accept(self),
             Expression::UnaryOperation(u) => u.accept(self),
@@ -288,9 +288,9 @@ pub trait ExpressionVisitor: Sized {
         }
     }
 
-    fn visit_literal(&self, literal: &Literal) -> Self::Return;
-    fn visit_unary(&self, unary: &Unary) -> Self::Return;
-    fn visit_binary(&self, binary: &Binary) -> Self::Return;
-    fn visit_identifier(&self, identifier: &Identifier) -> Self::Return;
-    fn visit_assignment(&self, assignment: &Assignment) -> Self::Return;
+    fn visit_literal(&mut self, literal: &Literal) -> Self::Return;
+    fn visit_unary(&mut self, unary: &Unary) -> Self::Return;
+    fn visit_binary(&mut self, binary: &Binary) -> Self::Return;
+    fn visit_identifier(&mut self, identifier: &Identifier) -> Self::Return;
+    fn visit_assignment(&mut self, assignment: &Assignment) -> Self::Return;
 }

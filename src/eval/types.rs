@@ -12,7 +12,7 @@ pub enum ValueType {
     Object(Object),
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
 pub struct Value {
     pub location: CodeSpan,
     pub value: ValueType,

@@ -1,4 +1,5 @@
-use crate::eval::types::ValueType;
+use crate::eval::runtime_error::RuntimeError;
+use crate::eval::types::{Value, ValueType};
 use std::collections::HashMap;
 
 pub struct Environment {
@@ -19,6 +20,22 @@ impl Environment {
             map.insert(identifier, value);
         } else {
             self.global.insert(identifier, value);
+        }
+    }
+
+    pub fn assign(&mut self, ident: String, value: Value) -> super::Result<()> {
+        for env in self.stack.iter_mut().rev() {
+            if env.contains_key(&ident) {
+                env.insert(ident, value.value);
+                return Ok(());
+            }
+        }
+
+        if self.global.contains_key(&ident) {
+            self.global.insert(ident, value.value);
+            Ok(())
+        } else {
+            Err(RuntimeError::UnboundName(value.location, ident))
         }
     }
 
