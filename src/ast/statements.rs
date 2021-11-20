@@ -7,6 +7,7 @@ pub enum Statement {
     Print(Expression),
     Expression(Expression),
     VariableDeclaration(VariableDeclaration),
+    Block(Statements),
 }
 
 pub struct Statements {
@@ -37,6 +38,7 @@ impl Display for Statement {
             Statement::Print(expr) => write!(f, "print {};", expr),
             Statement::Expression(expr) => write!(f, "{};", expr),
             Statement::VariableDeclaration(v) => write!(f, "{};", v),
+            Statement::Block(stmts) => write!(f, "{}", stmts),
         }
     }
 }
