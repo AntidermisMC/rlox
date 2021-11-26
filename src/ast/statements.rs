@@ -7,10 +7,17 @@ pub enum Statement {
     Expression(Expression),
     VariableDeclaration(VariableDeclaration),
     Block(Statements),
+    Conditional(Box<Conditional>),
 }
 
 pub struct Statements {
     pub stmts: Vec<Statement>,
+}
+
+pub struct Conditional {
+    condition: Expression,
+    true_statement: Statement,
+    false_statement: Option<Statement>,
 }
 
 impl Display for Statements {
@@ -29,6 +36,20 @@ impl Display for Statement {
             Statement::Expression(expr) => write!(f, "{};", expr),
             Statement::VariableDeclaration(v) => write!(f, "{}", v),
             Statement::Block(stmts) => write!(f, "{{\n{}}}", stmts),
+            Statement::Conditional(c) => write!(f, "{}", c),
+        }
+    }
+}
+
+impl Display for Conditional {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match &self.false_statement {
+            Some(else_statement) => write!(
+                f,
+                "if {} {{ {} }} else {}",
+                self.condition, self.true_statement, else_statement
+            ),
+            None => write!(f, "if {} {{ {} }}", self.condition, self.true_statement),
         }
     }
 }
@@ -39,4 +60,5 @@ pub trait StatementVisitor {
     fn visit_statement(&mut self, stmt: &Statement) -> Self::Return;
     fn visit_print(&mut self, expr: &Expression) -> Self::Return;
     fn visit_variable_declaration(&mut self, decl: &VariableDeclaration) -> Self::Return;
+    fn visit_conditional(&mut self, cond: &Conditional) -> Self::Return;
 }

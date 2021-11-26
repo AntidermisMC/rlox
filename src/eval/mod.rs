@@ -10,7 +10,7 @@ use crate::ast::expressions::{
     Assignment, Binary, BinaryOperator, Expression, ExpressionNode, ExpressionVisitor, Identifier,
     Literal, Unary, UnaryOperator,
 };
-use crate::ast::statements::{Statement, StatementVisitor};
+use crate::ast::statements::{Conditional, Statement, StatementVisitor};
 use crate::ast::LiteralValue;
 use crate::code_span::CodeSpan;
 use crate::eval::environment::Environment;
@@ -88,6 +88,7 @@ impl StatementVisitor for Evaluator {
                 self.env.pop_env();
                 Ok(())
             }
+            Statement::Conditional(c) => self.visit_conditional(c),
         }
     }
 
@@ -101,6 +102,10 @@ impl StatementVisitor for Evaluator {
         let init = self.visit_expression(&decl.initializer)?;
         self.env.define(decl.name.ident.to_string(), init.value);
         Ok(())
+    }
+
+    fn visit_conditional(&mut self, cond: &Conditional) -> Self::Return {
+        todo!()
     }
 }
 
