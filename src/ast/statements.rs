@@ -15,9 +15,9 @@ pub struct Statements {
 }
 
 pub struct Conditional {
-    condition: Expression,
-    true_statement: Statement,
-    false_statement: Option<Statement>,
+    pub condition: Expression,
+    pub then_statement: Statement,
+    pub else_statement: Option<Statement>,
 }
 
 impl Display for Statements {
@@ -43,13 +43,13 @@ impl Display for Statement {
 
 impl Display for Conditional {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match &self.false_statement {
+        match &self.else_statement {
             Some(else_statement) => write!(
                 f,
-                "if {} {{ {} }} else {}",
-                self.condition, self.true_statement, else_statement
+                "if {} {} else {}",
+                self.condition, self.then_statement, else_statement
             ),
-            None => write!(f, "if {} {{ {} }}", self.condition, self.true_statement),
+            None => write!(f, "if {} {}", self.condition, self.then_statement),
         }
     }
 }
