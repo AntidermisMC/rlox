@@ -159,6 +159,8 @@ impl ExpressionVisitor for Evaluator {
             BinaryOperator::Superiority => superiority(left, right),
             BinaryOperator::Equality => equality(left, right),
             BinaryOperator::Inequality => inequality(left, right),
+            BinaryOperator::Disjunction => todo!(),
+            BinaryOperator::Conjunction => todo!(),
         };
         Ok(Value::new(value_type?, binary.location))
     }

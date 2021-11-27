@@ -48,6 +48,8 @@ pub enum BinaryOperator {
     Subtraction,
     Multiplication,
     Division,
+    Conjunction,
+    Disjunction,
 }
 
 pub struct Assignment {
@@ -88,14 +90,16 @@ impl Priority for BinaryOperator {
         match self {
             BinaryOperator::Equality => 1,
             BinaryOperator::Inequality => 1,
-            BinaryOperator::StrictInferiority => 2,
-            BinaryOperator::Inferiority => 2,
-            BinaryOperator::StrictSuperiority => 2,
-            BinaryOperator::Superiority => 2,
-            BinaryOperator::Addition => 3,
-            BinaryOperator::Subtraction => 3,
-            BinaryOperator::Multiplication => 4,
-            BinaryOperator::Division => 4,
+            BinaryOperator::Conjunction => 2,
+            BinaryOperator::Disjunction => 2,
+            BinaryOperator::StrictInferiority => 3,
+            BinaryOperator::Inferiority => 3,
+            BinaryOperator::StrictSuperiority => 3,
+            BinaryOperator::Superiority => 3,
+            BinaryOperator::Addition => 4,
+            BinaryOperator::Subtraction => 4,
+            BinaryOperator::Multiplication => 5,
+            BinaryOperator::Division => 5,
         }
     }
 }
@@ -108,7 +112,7 @@ impl Priority for Binary {
 
 impl Priority for UnaryOperator {
     fn priority(&self) -> u8 {
-        5
+        6
     }
 }
 
@@ -120,13 +124,13 @@ impl Priority for Unary {
 
 impl Priority for Literal {
     fn priority(&self) -> u8 {
-        6
+        7
     }
 }
 
 impl Priority for Identifier {
     fn priority(&self) -> u8 {
-        6
+        7
     }
 }
 
@@ -207,6 +211,8 @@ impl Display for BinaryOperator {
             Self::Inferiority => "<=",
             Self::Subtraction => "-",
             Self::Multiplication => "*",
+            Self::Conjunction => "and",
+            Self::Disjunction => "or",
         };
         write!(f, "{}", c)
     }
