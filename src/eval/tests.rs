@@ -196,3 +196,27 @@ gen_tests!(
     "if (false) print \"a\"; else print \"b\";",
     "b"
 );
+
+gen_tests!(
+    conjunction_operator_simple,
+    "print true and true; print true and false; print false and true; print false and false;",
+    "truefalsefalsefalse"
+);
+
+gen_tests!(
+    disjunction_operator_simple,
+    "print true or true; print true or false; print false or true; print false or false;",
+    "truetruetruefalse"
+);
+
+gen_tests!(
+    conjunction_operator_short_circuit,
+    "var a = 1; var b = 3; true and (a = 2); false and (b = 4); print a * 10 + b;",
+    "23"
+);
+
+gen_tests!(
+    disjunction_operator_short_circuit,
+    "var a = 1; var b = 3; true or (a = 2); false or (b = 4); print a * 10 + b;",
+    "14"
+);

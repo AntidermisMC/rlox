@@ -147,20 +147,39 @@ impl ExpressionVisitor for Evaluator {
 
     fn visit_binary(&mut self, binary: &Binary) -> Self::Return {
         let left = self.visit_expression(binary.left.as_ref())?;
-        let right = self.visit_expression(binary.right.as_ref())?;
         let value_type = match binary.operator {
-            BinaryOperator::Addition => addition(left, right),
-            BinaryOperator::Subtraction => subtraction(left, right),
-            BinaryOperator::Multiplication => multiplication(left, right),
-            BinaryOperator::Division => division(left, right),
-            BinaryOperator::StrictInferiority => strict_inferiority(left, right),
-            BinaryOperator::Inferiority => inferiority(left, right),
-            BinaryOperator::StrictSuperiority => strict_superiority(left, right),
-            BinaryOperator::Superiority => superiority(left, right),
-            BinaryOperator::Equality => equality(left, right),
-            BinaryOperator::Inequality => inequality(left, right),
-            BinaryOperator::Disjunction => todo!(),
-            BinaryOperator::Conjunction => todo!(),
+            BinaryOperator::Addition => {
+                addition(left, self.visit_expression(binary.right.as_ref())?)
+            }
+            BinaryOperator::Subtraction => {
+                subtraction(left, self.visit_expression(binary.right.as_ref())?)
+            }
+            BinaryOperator::Multiplication => {
+                multiplication(left, self.visit_expression(binary.right.as_ref())?)
+            }
+            BinaryOperator::Division => {
+                division(left, self.visit_expression(binary.right.as_ref())?)
+            }
+            BinaryOperator::StrictInferiority => {
+                strict_inferiority(left, self.visit_expression(binary.right.as_ref())?)
+            }
+            BinaryOperator::Inferiority => {
+                inferiority(left, self.visit_expression(binary.right.as_ref())?)
+            }
+            BinaryOperator::StrictSuperiority => {
+                strict_superiority(left, self.visit_expression(binary.right.as_ref())?)
+            }
+            BinaryOperator::Superiority => {
+                superiority(left, self.visit_expression(binary.right.as_ref())?)
+            }
+            BinaryOperator::Equality => {
+                equality(left, self.visit_expression(binary.right.as_ref())?)
+            }
+            BinaryOperator::Inequality => {
+                inequality(left, self.visit_expression(binary.right.as_ref())?)
+            }
+            BinaryOperator::Disjunction => disjunction(left, binary.right.as_ref(), self),
+            BinaryOperator::Conjunction => conjunction(left, binary.right.as_ref(), self),
         };
         Ok(Value::new(value_type?, binary.location))
     }
@@ -268,4 +287,20 @@ fn equality(left: Value, right: Value) -> Result<ValueType> {
 fn inequality(left: Value, right: Value) -> Result<ValueType> {
     let val = !test_equality(&left, &right);
     Ok(ValueType::Boolean(val))
+}
+
+fn disjunction(left: Value, right: &Expression, visitor: &mut Evaluator) -> Result<ValueType> {
+    if is_truthy(&left.value) {
+        Ok(ValueType::Boolean(true))
+    } else {
+        Ok(visitor.visit_expression(&right)?.value)
+    }
+}
+
+fn conjunction(left: Value, right: &Expression, visitor: &mut Evaluator) -> Result<ValueType> {
+    if !is_truthy(&left.value) {
+        Ok(ValueType::Boolean(false))
+    } else {
+        Ok(visitor.visit_expression(&right)?.value)
+    }
 }
