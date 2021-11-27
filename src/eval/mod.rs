@@ -291,16 +291,16 @@ fn inequality(left: Value, right: Value) -> Result<ValueType> {
 
 fn disjunction(left: Value, right: &Expression, visitor: &mut Evaluator) -> Result<ValueType> {
     if is_truthy(&left.value) {
-        Ok(ValueType::Boolean(true))
+        Ok(left.value)
     } else {
-        Ok(visitor.visit_expression(&right)?.value)
+        visitor.visit_expression(&right).map(|val| val.value)
     }
 }
 
 fn conjunction(left: Value, right: &Expression, visitor: &mut Evaluator) -> Result<ValueType> {
     if !is_truthy(&left.value) {
-        Ok(ValueType::Boolean(false))
+        Ok(left.value)
     } else {
-        Ok(visitor.visit_expression(&right)?.value)
+        visitor.visit_expression(&right).map(|val| val.value)
     }
 }

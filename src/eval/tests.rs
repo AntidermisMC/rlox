@@ -199,14 +199,26 @@ gen_tests!(
 
 gen_tests!(
     conjunction_operator_simple,
-    "print true and true; print true and false; print false and true; print false and false;",
-    "truefalsefalsefalse"
+    "print 1 and 1; print 1 and nil; print nil and 1; print nil and false;",
+    "1nilnilnil"
 );
 
 gen_tests!(
     disjunction_operator_simple,
-    "print true or true; print true or false; print false or true; print false or false;",
-    "truetruetruefalse"
+    "print 1 or 1; print 1 or nil; print nil or 1; print nil or false;",
+    "111false"
+);
+
+gen_tests!(
+    conjunction_operator_do_not_convert_to_boolean,
+    "print nil and 1; print 2 and 3;",
+    "nil3"
+);
+
+gen_tests!(
+    disjunction_operator_do_not_convert_to_boolean,
+    "print 1 or nil; print nil or 2;",
+    "12"
 );
 
 gen_tests!(
