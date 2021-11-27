@@ -180,3 +180,19 @@ gen_tests!(
     "var a = 1; { var a = 2; print a; } print a;",
     "21"
 );
+
+gen_tests!(conditionals_true, "if (true) print \"a\";", "a");
+
+gen_tests!(conditionals_false, "if (false) print \"a\";", "");
+
+gen_tests!(
+    conditionals_else_true,
+    "if (true) print \"a\"; else print \"b\";",
+    "a"
+);
+
+gen_tests!(
+    conditionals_else_false,
+    "if (false) print \"a\"; else print \"b\";",
+    "b"
+);

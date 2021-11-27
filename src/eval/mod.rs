@@ -105,7 +105,14 @@ impl StatementVisitor for Evaluator {
     }
 
     fn visit_conditional(&mut self, cond: &Conditional) -> Self::Return {
-        todo!()
+        let value = self.visit_expression(&cond.condition)?;
+        if is_truthy(&value.value) {
+            Ok(self.visit_statement(&cond.then_statement)?)
+        } else if let Some(else_statement) = &cond.else_statement {
+            Ok(self.visit_statement(else_statement)?)
+        } else {
+            Ok(())
+        }
     }
 }
 
