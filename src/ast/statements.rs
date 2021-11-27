@@ -46,10 +46,10 @@ impl Display for Conditional {
         match &self.else_statement {
             Some(else_statement) => write!(
                 f,
-                "if {} {} else {}",
+                "if ({}) {} else {}",
                 self.condition, self.then_statement, else_statement
             ),
-            None => write!(f, "if {} {}", self.condition, self.then_statement),
+            None => write!(f, "if ({}) {}", self.condition, self.then_statement),
         }
     }
 }

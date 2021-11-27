@@ -71,7 +71,9 @@ fn parse_conditional(tokens: &mut TokenStream) -> Result<Statement> {
     if let Some(token) = tokens.next() {
         match token.get_type() {
             TokenType::If => {
+                consume(tokens, TokenType::LeftParen)?;
                 let condition = parse_expression(tokens)?;
+                consume(tokens, TokenType::RightParen)?;
                 let then_statement = parse_statement(tokens)?;
                 let else_statement = if tokens
                     .peek()
@@ -130,8 +132,8 @@ mod tests {
     gen_tests!(
         test_conditionals,
         parse_statement,
-        "if true {\nfalse;\n}",
-        "if false true; else \"Something else\";",
-        "{\nif true something;\nprint something_else;\n}"
+        "if (true) {\nfalse;\n}",
+        "if (false) true; else \"Something else\";",
+        "{\nif (true) something;\nprint something_else;\n}"
     );
 }
