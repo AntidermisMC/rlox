@@ -13,8 +13,52 @@ pub fn parse_expression(tokens: &mut TokenStream) -> Result<Expression> {
     parse_assignment(tokens)
 }
 
+fn parse_logic_or(tokens: &mut TokenStream) -> Result<Expression> {
+    let mut expr = parse_logic_and(tokens)?;
+
+    while let Some(token) = tokens.peek() {
+        if token.is_of_type(TokenType::Or) {
+            tokens.next();
+            let right = parse_logic_and(tokens)?;
+            let span = CodeSpan::new(expr.get_location().start, right.get_location().end);
+            expr = Expression::BinaryOperation(Binary {
+                operator: BinaryOperator::Disjunction,
+                left: Box::new(expr),
+                right: Box::new(right),
+                location: span,
+            });
+        } else {
+            break;
+        }
+    }
+
+    Ok(expr)
+}
+
+fn parse_logic_and(tokens: &mut TokenStream) -> Result<Expression> {
+    let mut expr = parse_equality(tokens)?;
+
+    while let Some(token) = tokens.peek() {
+        if token.is_of_type(TokenType::And) {
+            tokens.next();
+            let right = parse_equality(tokens)?;
+            let span = CodeSpan::new(expr.get_location().start, right.get_location().end);
+            expr = Expression::BinaryOperation(Binary {
+                operator: BinaryOperator::Conjunction,
+                left: Box::new(expr),
+                right: Box::new(right),
+                location: span,
+            });
+        } else {
+            break;
+        }
+    }
+
+    Ok(expr)
+}
+
 fn parse_assignment(tokens: &mut TokenStream) -> Result<Expression> {
-    let expr = parse_equality(tokens)?;
+    let expr = parse_logic_or(tokens)?;
 
     if let Some(token) = tokens.peek() {
         if token.is_of_type(TokenType::Equal) {
@@ -269,5 +313,14 @@ mod tests {
         parse_assignment,
         "a = b = 1",
         "c = d + (e = 3)"
+    );
+
+    gen_tests!(
+        boolean_operators,
+        parse_expression,
+        "true or false",
+        "entry and dessert",
+        "a = true or false",
+        "a or b or c"
     );
 }
