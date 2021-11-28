@@ -43,7 +43,7 @@ impl Display for Statement {
             Statement::VariableDeclaration(v) => write!(f, "{}", v),
             Statement::Block(stmts) => write!(f, "{{\n{}}}", stmts),
             Statement::Conditional(c) => write!(f, "{}", c),
-            Statement::WhileLoop(l) => write!(f, "while ({}) {}", l.statement, l.condition),
+            Statement::WhileLoop(l) => write!(f, "while ({}) {}", l.condition, l.statement),
         }
     }
 }

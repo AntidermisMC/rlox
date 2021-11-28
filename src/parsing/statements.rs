@@ -1,6 +1,6 @@
 use super::parsing_error::ParsingError;
 use super::Result;
-use crate::ast::statements::{Conditional, Statement, Statements};
+use crate::ast::statements::{Conditional, Statement, Statements, WhileLoop};
 use crate::parsing::consume;
 use crate::parsing::declarations::parse_declaration;
 use crate::parsing::expressions::parse_expression;
@@ -41,6 +41,7 @@ pub fn parse_statement(tokens: &mut TokenStream) -> Result<Statement> {
                 }
             }
             TokenType::If => parse_conditional(tokens),
+            TokenType::While => parse_while_loop(tokens),
             _ => {
                 let expr = parse_expression(tokens)?;
                 consume(tokens, TokenType::Semicolon)?;
@@ -68,9 +69,10 @@ fn parse_print(tokens: &mut TokenStream) -> Result<Statement> {
 }
 
 fn parse_conditional(tokens: &mut TokenStream) -> Result<Statement> {
-    if let Some(token) = tokens.next() {
+    if let Some(token) = tokens.peek() {
         match token.get_type() {
             TokenType::If => {
+                tokens.next();
                 consume(tokens, TokenType::LeftParen)?;
                 let condition = parse_expression(tokens)?;
                 consume(tokens, TokenType::RightParen)?;
@@ -89,6 +91,29 @@ fn parse_conditional(tokens: &mut TokenStream) -> Result<Statement> {
                     condition,
                     then_statement,
                     else_statement,
+                })))
+            }
+            _ => Err(ParsingError::UnexpectedToken(token)),
+        }
+    } else {
+        Err(ParsingError::UnexpectedEndOfTokenStream(
+            tokens.current_position(),
+        ))
+    }
+}
+
+fn parse_while_loop(tokens: &mut TokenStream) -> Result<Statement> {
+    if let Some(token) = tokens.peek() {
+        match token.get_type() {
+            TokenType::While => {
+                tokens.next();
+                consume(tokens, TokenType::LeftParen)?;
+                let condition = parse_expression(tokens)?;
+                consume(tokens, TokenType::RightParen)?;
+                let statement = parse_statement(tokens)?;
+                Ok(Statement::WhileLoop(Box::new(WhileLoop {
+                    condition,
+                    statement,
                 })))
             }
             _ => Err(ParsingError::UnexpectedToken(token)),
@@ -135,5 +160,12 @@ mod tests {
         "if (true) {\nfalse;\n}",
         "if (false) true; else \"Something else\";",
         "{\nif (true) something;\nprint something_else;\n}"
+    );
+
+    gen_tests!(
+        test_while_loop,
+        parse_statement,
+        "while (true) print a;",
+        "while (true) {\n}"
     );
 }
