@@ -89,7 +89,7 @@ impl StatementVisitor for Evaluator {
                 Ok(())
             }
             Statement::Conditional(c) => self.visit_conditional(c),
-            Statement::WhileLoop(w) => todo!(),
+            Statement::WhileLoop(w) => self.visit_while_loop(w),
         }
     }
 
@@ -117,7 +117,11 @@ impl StatementVisitor for Evaluator {
     }
 
     fn visit_while_loop(&mut self, while_loop: &WhileLoop) -> Self::Return {
-        todo!()
+        while is_truthy(&self.visit_expression(&while_loop.condition)?.value) {
+            self.visit_statement(&while_loop.statement)?;
+        }
+
+        Ok(())
     }
 }
 

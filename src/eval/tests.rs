@@ -232,3 +232,17 @@ gen_tests!(
     "var a = 1; var b = 3; true or (a = 2); false or (b = 4); print a * 10 + b;",
     "14"
 );
+
+gen_tests!(while_loop_false, "while (false) print 1;", "");
+
+gen_tests!(
+    while_loop_once,
+    "var c = true; while (c) { print 1; c = false; }",
+    "1"
+);
+
+gen_tests!(
+    while_loop_many,
+    "var i = 0; while (i < 10) i = i + 1; print i;",
+    "10"
+);
