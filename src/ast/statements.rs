@@ -8,6 +8,7 @@ pub enum Statement {
     VariableDeclaration(VariableDeclaration),
     Block(Statements),
     Conditional(Box<Conditional>),
+    WhileLoop(Box<WhileLoop>),
 }
 
 pub struct Statements {
@@ -18,6 +19,11 @@ pub struct Conditional {
     pub condition: Expression,
     pub then_statement: Statement,
     pub else_statement: Option<Statement>,
+}
+
+pub struct WhileLoop {
+    pub condition: Expression,
+    pub statement: Statement,
 }
 
 impl Display for Statements {
@@ -37,6 +43,7 @@ impl Display for Statement {
             Statement::VariableDeclaration(v) => write!(f, "{}", v),
             Statement::Block(stmts) => write!(f, "{{\n{}}}", stmts),
             Statement::Conditional(c) => write!(f, "{}", c),
+            Statement::WhileLoop(l) => write!(f, "while ({}) {}", l.statement, l.condition),
         }
     }
 }
@@ -61,4 +68,5 @@ pub trait StatementVisitor {
     fn visit_print(&mut self, expr: &Expression) -> Self::Return;
     fn visit_variable_declaration(&mut self, decl: &VariableDeclaration) -> Self::Return;
     fn visit_conditional(&mut self, cond: &Conditional) -> Self::Return;
+    fn visit_while_loop(&mut self, while_loop: &WhileLoop) -> Self::Return;
 }

@@ -10,7 +10,7 @@ use crate::ast::expressions::{
     Assignment, Binary, BinaryOperator, Expression, ExpressionNode, ExpressionVisitor, Identifier,
     Literal, Unary, UnaryOperator,
 };
-use crate::ast::statements::{Conditional, Statement, StatementVisitor};
+use crate::ast::statements::{Conditional, Statement, StatementVisitor, WhileLoop};
 use crate::ast::LiteralValue;
 use crate::code_span::CodeSpan;
 use crate::eval::environment::Environment;
@@ -89,6 +89,7 @@ impl StatementVisitor for Evaluator {
                 Ok(())
             }
             Statement::Conditional(c) => self.visit_conditional(c),
+            Statement::WhileLoop(w) => todo!(),
         }
     }
 
@@ -113,6 +114,10 @@ impl StatementVisitor for Evaluator {
         } else {
             Ok(())
         }
+    }
+
+    fn visit_while_loop(&mut self, while_loop: &WhileLoop) -> Self::Return {
+        todo!()
     }
 }
 
