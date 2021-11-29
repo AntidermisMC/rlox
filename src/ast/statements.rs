@@ -9,6 +9,7 @@ pub enum Statement {
     Block(Statements),
     Conditional(Box<Conditional>),
     WhileLoop(Box<WhileLoop>),
+    ForLoop(Box<ForLoop>),
 }
 
 pub struct Statements {
@@ -24,6 +25,13 @@ pub struct Conditional {
 pub struct WhileLoop {
     pub condition: Expression,
     pub statement: Statement,
+}
+
+pub struct ForLoop {
+    pub initializer: Option<Statement>,
+    pub condition: Option<Statement>,
+    pub increment: Option<Statement>,
+    pub body: Statement,
 }
 
 impl Display for Statements {
@@ -44,6 +52,7 @@ impl Display for Statement {
             Statement::Block(stmts) => write!(f, "{{\n{}}}", stmts),
             Statement::Conditional(c) => write!(f, "{}", c),
             Statement::WhileLoop(l) => write!(f, "while ({}) {}", l.condition, l.statement),
+            Statement::ForLoop(l) => write!(f, "{}", l),
         }
     }
 }
@@ -61,6 +70,24 @@ impl Display for Conditional {
     }
 }
 
+impl Display for ForLoop {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "for (")?;
+        if let Some(init) = &self.initializer {
+            write!(f, "{}", init)?;
+        }
+        write!(f, ";")?;
+        if let Some(cond) = &self.condition {
+            write!(f, "{}", cond)?;
+        }
+        write!(f, ";")?;
+        if let Some(increment) = &self.increment {
+            write!(f, "{}", increment)?;
+        }
+        write!(f, ")")
+    }
+}
+
 pub trait StatementVisitor {
     type Return;
 
@@ -69,4 +96,5 @@ pub trait StatementVisitor {
     fn visit_variable_declaration(&mut self, decl: &VariableDeclaration) -> Self::Return;
     fn visit_conditional(&mut self, cond: &Conditional) -> Self::Return;
     fn visit_while_loop(&mut self, while_loop: &WhileLoop) -> Self::Return;
+    fn visit_for_loop(&mut self, for_loop: &ForLoop) -> Self::Return;
 }
