@@ -29,8 +29,8 @@ pub struct WhileLoop {
 
 pub struct ForLoop {
     pub initializer: Option<Statement>,
-    pub condition: Option<Statement>,
-    pub increment: Option<Statement>,
+    pub condition: Option<Expression>,
+    pub increment: Option<Expression>,
     pub body: Statement,
 }
 
@@ -75,16 +75,17 @@ impl Display for ForLoop {
         write!(f, "for (")?;
         if let Some(init) = &self.initializer {
             write!(f, "{}", init)?;
+        } else {
+            write!(f, ";")?;
         }
-        write!(f, ";")?;
         if let Some(cond) = &self.condition {
-            write!(f, "{}", cond)?;
+            write!(f, " {}", cond)?;
         }
         write!(f, ";")?;
         if let Some(increment) = &self.increment {
-            write!(f, "{}", increment)?;
+            write!(f, " {}", increment)?;
         }
-        write!(f, ")")
+        write!(f, ") {}", self.body)
     }
 }
 

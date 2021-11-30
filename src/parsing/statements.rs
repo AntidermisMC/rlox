@@ -1,8 +1,8 @@
 use super::parsing_error::ParsingError;
 use super::Result;
-use crate::ast::statements::{Conditional, Statement, Statements, WhileLoop};
+use crate::ast::statements::{Conditional, ForLoop, Statement, Statements, WhileLoop};
 use crate::parsing::consume;
-use crate::parsing::declarations::parse_declaration;
+use crate::parsing::declarations::{parse_declaration, parse_variable_declaration};
 use crate::parsing::expressions::parse_expression;
 use crate::scanning::{TokenStream, TokenType};
 
@@ -42,6 +42,7 @@ pub fn parse_statement(tokens: &mut TokenStream) -> Result<Statement> {
             }
             TokenType::If => parse_conditional(tokens),
             TokenType::While => parse_while_loop(tokens),
+            TokenType::For => parse_for(tokens),
             _ => {
                 let expr = parse_expression(tokens)?;
                 consume(tokens, TokenType::Semicolon)?;
@@ -125,6 +126,71 @@ fn parse_while_loop(tokens: &mut TokenStream) -> Result<Statement> {
     }
 }
 
+fn parse_for(tokens: &mut TokenStream) -> Result<Statement> {
+    if let Some(token) = tokens.peek() {
+        match token.get_type() {
+            TokenType::For => {
+                tokens.next();
+                consume(tokens, TokenType::LeftParen)?;
+
+                let initializer = if tokens
+                    .peek()
+                    .map(|t| t.is_of_type(TokenType::Semicolon))
+                    .unwrap_or(false)
+                {
+                    None
+                } else if tokens
+                    .peek()
+                    .map(|t| t.is_of_type(TokenType::Var))
+                    .unwrap_or(false)
+                {
+                    Some(Statement::VariableDeclaration(parse_variable_declaration(
+                        tokens,
+                    )?))
+                } else {
+                    Some(Statement::Expression(parse_expression(tokens)?))
+                };
+                consume(tokens, TokenType::Semicolon)?;
+
+                let condition = if tokens
+                    .peek()
+                    .map(|t| t.is_of_type(TokenType::Semicolon))
+                    .unwrap_or(false)
+                {
+                    None
+                } else {
+                    Some(parse_expression(tokens)?)
+                };
+                consume(tokens, TokenType::Semicolon);
+
+                let increment = if tokens
+                    .peek()
+                    .map(|t| t.is_of_type(TokenType::RightParen))
+                    .unwrap_or(false)
+                {
+                    None
+                } else {
+                    Some(parse_expression(tokens)?)
+                };
+
+                consume(tokens, TokenType::RightParen)?;
+                let body = parse_statement(tokens)?;
+                Ok(Statement::ForLoop(Box::new(ForLoop {
+                    initializer,
+                    condition,
+                    increment,
+                    body,
+                })))
+            }
+            _ => Err(ParsingError::UnexpectedToken(token)),
+        }
+    } else {
+        Err(ParsingError::UnexpectedEndOfTokenStream(
+            tokens.current_position(),
+        ))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::super::tests::*;
@@ -167,5 +233,12 @@ mod tests {
         parse_statement,
         "while (true) print a;",
         "while (true) {\n}"
+    );
+
+    gen_tests!(
+        test_for_loop,
+        parse_statement,
+        "for (;;) print 1;",
+        "for (var i = 0; i < 10; i = i + 1) print i;"
     );
 }

@@ -11,9 +11,9 @@ use crate::scanning::{Token, TokenStream, TokenType};
 pub fn parse_declaration(tokens: &mut TokenStream) -> Result<Statement> {
     if let Some(t) = tokens.peek() {
         if t.consume() == TokenType::Var {
-            Ok(Statement::VariableDeclaration(parse_variable_declaration(
-                tokens,
-            )?))
+            let var_dec = parse_variable_declaration(tokens)?;
+            consume(tokens, TokenType::Semicolon)?;
+            Ok(Statement::VariableDeclaration(var_dec))
         } else {
             parse_statement(tokens)
         }
@@ -24,7 +24,7 @@ pub fn parse_declaration(tokens: &mut TokenStream) -> Result<Statement> {
     }
 }
 
-fn parse_variable_declaration(tokens: &mut TokenStream) -> Result<VariableDeclaration> {
+pub fn parse_variable_declaration(tokens: &mut TokenStream) -> Result<VariableDeclaration> {
     consume(tokens, TokenType::Var)?;
     match tokens.next() {
         Some(token) => {
@@ -40,7 +40,6 @@ fn parse_variable_declaration(tokens: &mut TokenStream) -> Result<VariableDeclar
                             CodeSpan::new(location, location),
                         ))
                     };
-                    consume(tokens, TokenType::Semicolon)?;
                     Ok(VariableDeclaration {
                         name: Identifier {
                             ident: s,

@@ -37,6 +37,7 @@ pub fn parse(tokens: &mut TokenStream) -> Result<Statements> {
 }
 
 /// Consumes the first token of the stream if it is of the right type, else errors.
+#[must_use]
 fn consume(tokens: &mut TokenStream, token: TokenType) -> Result<Token> {
     match tokens.peek() {
         Some(t) if t.is_of_type(token) => {
