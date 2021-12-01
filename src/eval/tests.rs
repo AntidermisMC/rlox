@@ -246,3 +246,30 @@ gen_tests!(
     "var i = 0; while (i < 10) i = i + 1; print i;",
     "10"
 );
+
+gen_tests!(
+    for_loop,
+    "for (var i = 0; i < 10; i = i + 1) print i;",
+    "0123456789"
+);
+
+gen_tests!(
+    for_loop_omitted_fields,
+    "var i = 0; for (;i < 10;) { print i; i = i + 1; }",
+    "0123456789"
+);
+
+gen_tests!(
+    simple_fibonacci,
+    "\
+var a = 0;
+var temp;
+
+for (var b = 1; a < 10000; b = temp + b) {
+  print a;
+  temp = a;
+  a = b;
+}
+",
+    "011235813213455891442333776109871597258441816765"
+);

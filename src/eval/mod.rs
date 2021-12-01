@@ -126,7 +126,28 @@ impl StatementVisitor for Evaluator {
     }
 
     fn visit_for_loop(&mut self, for_loop: &ForLoop) -> Self::Return {
-        todo!()
+        self.env.push_env();
+        if let Some(initializer) = &for_loop.initializer {
+            self.visit_statement(initializer)?;
+        }
+        if let Some(condition) = &for_loop.condition {
+            while is_truthy(&self.visit_expression(condition)?.value) {
+                self.visit_statement(&for_loop.body)?;
+                if let Some(increment) = &for_loop.increment {
+                    self.visit_expression(increment)?;
+                }
+            }
+        } else {
+            loop {
+                self.visit_statement(&for_loop.body)?;
+                if let Some(increment) = &for_loop.increment {
+                    self.visit_expression(increment)?;
+                }
+            }
+        }
+        self.env.pop_env();
+
+        Ok(())
     }
 }
 
