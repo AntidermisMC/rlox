@@ -13,6 +13,7 @@ pub enum RuntimeError {
     DivisionByZero(CodeSpan),
     UnboundName(CodeSpan, String),
     WriteError(CodeSpan),
+    NotCallable(CodeSpan),
 }
 
 impl RuntimeError {
@@ -22,6 +23,7 @@ impl RuntimeError {
             RuntimeError::DivisionByZero(span) => span,
             RuntimeError::UnboundName(span, _) => span,
             RuntimeError::WriteError(span) => span,
+            RuntimeError::NotCallable(span) => span,
         }
     }
 }
@@ -33,6 +35,7 @@ impl Display for RuntimeError {
             &RuntimeError::DivisionByZero(_) => "Division by zero".to_string(),
             &RuntimeError::UnboundName(_, ident) => format!("Unbound name {}", ident),
             &RuntimeError::WriteError(_) => "Write failed".to_string(),
+            &RuntimeError(_) => "Not a callable object".to_string(),
         };
         write!(f, "{}: {}", self.location(), error_type)
     }

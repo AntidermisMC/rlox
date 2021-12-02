@@ -237,6 +237,17 @@ impl ExpressionVisitor for Evaluator {
     }
 
     fn visit_call(&mut self, call: &Call) -> Self::Return {
+        let callee = self.visit_expression(call.callee.as_ref())?;
+
+        let mut arguments = Vec::new();
+        for argument in &call.arguments {
+            arguments.push(self.visit_expression(argument)?)
+        }
+
+        match callee.value {
+            _ => Err(RuntimeError::NotCallable(callee.location)),
+        }
+
         todo!()
     }
 }
