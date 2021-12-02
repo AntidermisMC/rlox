@@ -9,6 +9,7 @@ pub enum Expression {
     BinaryOperation(Binary),
     Identifier(Identifier),
     Assignment(Assignment),
+    Call(Call),
 }
 
 #[derive(Clone)]
@@ -63,6 +64,12 @@ pub struct Identifier {
     pub location: CodeSpan,
 }
 
+pub struct Call {
+    pub callee: Box<Expression>,
+    pub arguments: Vec<Expression>,
+    pub location: CodeSpan,
+}
+
 impl Expression {
     pub fn get_location(&self) -> CodeSpan {
         match self {
@@ -71,6 +78,7 @@ impl Expression {
             Expression::BinaryOperation(b) => b.location,
             Expression::Identifier(i) => i.location,
             Expression::Assignment(a) => a.location,
+            Expression::Call(c) => c.location,
         }
     }
 }
@@ -124,13 +132,13 @@ impl Priority for Unary {
 
 impl Priority for Literal {
     fn priority(&self) -> u8 {
-        7
+        8
     }
 }
 
 impl Priority for Identifier {
     fn priority(&self) -> u8 {
-        7
+        8
     }
 }
 
@@ -148,6 +156,7 @@ impl Priority for Expression {
             Expression::BinaryOperation(b) => b.operator.priority(),
             Expression::Identifier(i) => i.priority(),
             Expression::Assignment(a) => a.priority(),
+            Expression::Call(_) => 7,
         }
     }
 }
@@ -265,6 +274,20 @@ impl Display for Assignment {
     }
 }
 
+impl Display for Call {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}(", self.callee)?;
+        let mut it = self.arguments.iter();
+        if let Some(argument) = it.next() {
+            write!(f, "{}", argument)?;
+            for arg in it {
+                write!(f, ", {}", arg)?;
+            }
+        }
+        write!(f, ")")
+    }
+}
+
 impl Display for Expression {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -273,6 +296,7 @@ impl Display for Expression {
             Self::UnaryOperation(u) => write!(f, "{}", u),
             Self::Identifier(i) => write!(f, "{}", i.ident),
             Self::Assignment(a) => write!(f, "{}", a),
+            Self::Call(call) => write!(f, "{}", call),
         }
     }
 }
@@ -291,6 +315,7 @@ pub trait ExpressionVisitor: Sized {
             Expression::BinaryOperation(b) => b.accept(self),
             Expression::Identifier(i) => i.accept(self),
             Expression::Assignment(a) => a.accept(self),
+            Expression::Call(c) => self.visit_call(c),
         }
     }
 
@@ -299,4 +324,5 @@ pub trait ExpressionVisitor: Sized {
     fn visit_binary(&mut self, binary: &Binary) -> Self::Return;
     fn visit_identifier(&mut self, identifier: &Identifier) -> Self::Return;
     fn visit_assignment(&mut self, assignment: &Assignment) -> Self::Return;
+    fn visit_call(&mut self, call: &Call) -> Self::Return;
 }

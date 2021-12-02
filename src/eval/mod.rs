@@ -7,8 +7,8 @@ use runtime_error::RuntimeError;
 use types::{Type, Value, ValueType};
 
 use crate::ast::expressions::{
-    Assignment, Binary, BinaryOperator, Expression, ExpressionNode, ExpressionVisitor, Identifier,
-    Literal, Unary, UnaryOperator,
+    Assignment, Binary, BinaryOperator, Call, Expression, ExpressionNode, ExpressionVisitor,
+    Identifier, Literal, Unary, UnaryOperator,
 };
 use crate::ast::statements::{Conditional, ForLoop, Statement, StatementVisitor, WhileLoop};
 use crate::ast::LiteralValue;
@@ -234,6 +234,10 @@ impl ExpressionVisitor for Evaluator {
         self.env
             .assign(assignment.ident.ident.clone(), expr.clone())?;
         Ok(expr)
+    }
+
+    fn visit_call(&mut self, call: &Call) -> Self::Return {
+        todo!()
     }
 }
 
