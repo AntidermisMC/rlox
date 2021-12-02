@@ -231,7 +231,14 @@ fn parse_arguments(tokens: &mut TokenStream) -> Result<Vec<Expression>> {
                     return Err(ParsingError::UnexpectedToken(next));
                 }
             }
-            Ok(arguments)
+            if arguments.len() >= 255 {
+                Err(ParsingError::TooManyArguments(CodeSpan::combine(
+                    arguments.first().unwrap().get_location(),
+                    arguments.last().unwrap().get_location(),
+                )))
+            } else {
+                Ok(arguments)
+            }
         }
     } else {
         Err(ParsingError::UnexpectedEndOfTokenStream(
