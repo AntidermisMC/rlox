@@ -161,7 +161,7 @@ fn parse_for(tokens: &mut TokenStream) -> Result<Statement> {
                 } else {
                     Some(parse_expression(tokens)?)
                 };
-                consume(tokens, TokenType::Semicolon);
+                consume(tokens, TokenType::Semicolon)?;
 
                 let increment = if tokens
                     .peek()

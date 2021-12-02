@@ -1,11 +1,11 @@
 use crate::ast::expressions::{
-    Assignment, Binary, BinaryOperator, Expression, Identifier, Literal, Unary, UnaryOperator,
+    Assignment, Binary, BinaryOperator, Call, Expression, Identifier, Literal, Unary, UnaryOperator,
 };
 use crate::ast::LiteralValue::{False, Nil, NumberLiteral, StringLiteral, True};
 use crate::code_span::CodeSpan;
-use crate::parsing::try_parse;
 use crate::parsing::ParsingError;
 use crate::parsing::Result;
+use crate::parsing::{consume, try_parse};
 use crate::scanning::{Token, TokenStream, TokenType};
 use std::convert::TryFrom;
 
@@ -187,9 +187,56 @@ fn parse_unary(tokens: &mut TokenStream) -> Result<Expression> {
                 }))
             } else {
                 tokens.back();
-                parse_primary(tokens)
+                parse_call(tokens)
             }
         }
+    }
+}
+
+fn parse_call(tokens: &mut TokenStream) -> Result<Expression> {
+    let mut expr = parse_primary(tokens)?;
+
+    while let Some(token) = tokens.peek() {
+        if token.is_of_type(TokenType::LeftParen) {
+            tokens.next();
+            let arguments = parse_arguments(tokens)?;
+            let paren = consume(tokens, TokenType::RightParen)?;
+            let span = expr.get_location();
+            expr = Expression::Call(Call {
+                callee: Box::new(expr),
+                arguments,
+                location: CodeSpan::combine(span, paren.get_span()),
+            });
+        } else {
+            break;
+        }
+    }
+
+    Ok(expr)
+}
+
+fn parse_arguments(tokens: &mut TokenStream) -> Result<Vec<Expression>> {
+    if let Some(token) = tokens.peek() {
+        if token.is_of_type(TokenType::RightParen) {
+            Ok(Vec::new())
+        } else {
+            let mut arguments = vec![parse_expression(tokens)?];
+            while let Some(next) = tokens.peek() {
+                if next.is_of_type(TokenType::RightParen) {
+                    break;
+                } else if next.is_of_type(TokenType::Comma) {
+                    tokens.next();
+                    arguments.push(parse_expression(tokens)?);
+                } else {
+                    return Err(ParsingError::UnexpectedToken(next));
+                }
+            }
+            Ok(arguments)
+        }
+    } else {
+        Err(ParsingError::UnexpectedEndOfTokenStream(
+            tokens.current_position(),
+        ))
     }
 }
 
@@ -322,5 +369,14 @@ mod tests {
         "entry and dessert",
         "a = true or false",
         "a or b or c"
+    );
+
+    gen_tests!(
+        calls,
+        parse_expression,
+        "a()",
+        "callback()()",
+        "one_arg(1)",
+        "lots_of_args(test(), \"a\", a == b)"
     );
 }
