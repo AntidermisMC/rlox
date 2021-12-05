@@ -4,13 +4,13 @@ use std::rc::Rc;
 
 use crate::ast::declarations::VariableDeclaration;
 use runtime_error::RuntimeError;
-use types::{Type, Value, ValueType};
 
 use crate::ast::expressions::{
     Assignment, Binary, BinaryOperator, Call, Expression, ExpressionNode, ExpressionVisitor,
     Identifier, Literal, Unary, UnaryOperator,
 };
 use crate::ast::statements::{Conditional, ForLoop, Statement, StatementVisitor, WhileLoop};
+use crate::ast::types::{Type, Value, ValueType};
 use crate::ast::LiteralValue;
 use crate::code_span::CodeSpan;
 use crate::eval::environment::Environment;
@@ -20,7 +20,6 @@ use crate::eval::RuntimeError::{DivisionByZero, MismatchedTypes};
 mod environment;
 pub mod out;
 mod runtime_error;
-mod types;
 
 #[cfg(test)]
 mod tests;
@@ -245,10 +244,9 @@ impl ExpressionVisitor for Evaluator {
         }
 
         match callee.value {
+            // TODO check arity
             _ => Err(RuntimeError::NotCallable(callee.location)),
         }
-
-        todo!()
     }
 }
 

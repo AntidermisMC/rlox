@@ -35,7 +35,7 @@ impl Display for RuntimeError {
             &RuntimeError::DivisionByZero(_) => "Division by zero".to_string(),
             &RuntimeError::UnboundName(_, ident) => format!("Unbound name {}", ident),
             &RuntimeError::WriteError(_) => "Write failed".to_string(),
-            &RuntimeError(_) => "Not a callable object".to_string(),
+            &RuntimeError::NotCallable(_) => "Not a callable object".to_string(),
         };
         write!(f, "{}: {}", self.location(), error_type)
     }

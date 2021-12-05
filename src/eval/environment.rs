@@ -1,5 +1,5 @@
+use crate::ast::types::{Value, ValueType};
 use crate::eval::runtime_error::RuntimeError;
-use crate::eval::types::{Value, ValueType};
 use std::collections::HashMap;
 
 pub struct Environment {
