@@ -13,10 +13,12 @@ use crate::ast::statements::{Conditional, ForLoop, Statement, StatementVisitor, 
 use crate::ast::types::{Type, Value, ValueType};
 use crate::ast::LiteralValue;
 use crate::code_span::CodeSpan;
+use crate::eval::builtins::{prelude, NativeFunction};
 use crate::eval::environment::Environment;
 use crate::eval::out::OutputStream;
 use crate::eval::RuntimeError::{DivisionByZero, MismatchedTypes};
 
+mod builtins;
 mod environment;
 pub mod out;
 mod runtime_error;
@@ -34,6 +36,14 @@ impl Evaluator {
         Evaluator {
             env: Environment::new(),
             out,
+        }
+    }
+
+    pub fn register_prelude(&mut self, prelude: Vec<(&str, NativeFunction, usize)>) {
+        let prelude = prelude();
+        for (name, function, arity) in prelude {
+            self.env
+                .define(name, ValueType::NativeFunction(function, arity));
         }
     }
 }
@@ -254,7 +264,7 @@ impl ExpressionVisitor for Evaluator {
                     ))
                 } else {
                     Ok(Value {
-                        value: f(arguments),
+                        value: f(arguments)?,
                         location: call.location,
                     })
                 }

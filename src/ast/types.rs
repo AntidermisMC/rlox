@@ -1,4 +1,5 @@
 use crate::code_span::CodeSpan;
+use crate::eval::Result;
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 use std::rc::Rc;
@@ -10,7 +11,7 @@ pub enum ValueType {
     Boolean(bool),
     Nil,
     Object(Object),
-    NativeFunction(fn(Vec<ValueType>) -> ValueType, usize),
+    NativeFunction(fn(Vec<ValueType>) -> Result<ValueType>, usize),
 }
 
 #[derive(PartialEq, Debug, Clone)]
