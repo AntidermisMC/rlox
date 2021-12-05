@@ -1,4 +1,3 @@
-use crate::ast::functions::NativeFunction;
 use crate::ast::types::{Value, ValueType};
 use crate::eval::runtime_error::RuntimeError;
 use std::collections::HashMap;

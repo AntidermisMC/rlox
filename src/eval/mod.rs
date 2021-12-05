@@ -240,11 +240,25 @@ impl ExpressionVisitor for Evaluator {
 
         let mut arguments = Vec::new();
         for argument in &call.arguments {
-            arguments.push(self.visit_expression(argument)?)
+            arguments.push(self.visit_expression(argument)?.value)
         }
 
         match callee.value {
             // TODO check arity
+            ValueType::NativeFunction(f, arity) => {
+                if arguments.len() != arity {
+                    Err(RuntimeError::InvalidArgumentCount(
+                        call.location,
+                        arity,
+                        arguments.len(),
+                    ))
+                } else {
+                    Ok(Value {
+                        value: f(arguments),
+                        location: call.location,
+                    })
+                }
+            }
             _ => Err(RuntimeError::NotCallable(callee.location)),
         }
     }

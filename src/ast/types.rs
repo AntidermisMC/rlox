@@ -10,7 +10,7 @@ pub enum ValueType {
     Boolean(bool),
     Nil,
     Object(Object),
-    NativeFunction(fn(Vec<ValueType>) -> ValueType),
+    NativeFunction(fn(Vec<ValueType>) -> ValueType, usize),
 }
 
 #[derive(PartialEq, Debug, Clone)]
@@ -39,7 +39,7 @@ impl ValueType {
             ValueType::Boolean(_) => Type::Boolean,
             ValueType::Nil => Type::Nil,
             ValueType::Object(_) => Type::Object,
-            ValueType::NativeFunction(_) => Type::NativeFunction,
+            ValueType::NativeFunction(_, _) => Type::NativeFunction,
         }
     }
 }
@@ -58,7 +58,7 @@ impl From<&ValueType> for Type {
             ValueType::Boolean(_) => Type::Boolean,
             ValueType::Nil => Type::Nil,
             ValueType::Object(_) => Type::Object,
-            ValueType::NativeFunction(_) => Type::NativeFunction,
+            ValueType::NativeFunction(_, _) => Type::NativeFunction,
         }
     }
 }
@@ -77,7 +77,7 @@ impl Display for ValueType {
             ValueType::Boolean(b) => write!(f, "{}", b),
             ValueType::Nil => write!(f, "nil"),
             ValueType::Object(_) => write!(f, "[Object object]"),
-            ValueType::NativeFunction(_) => write!(f, "<native fn>"),
+            ValueType::NativeFunction(_, _) => write!(f, "<native fn>"),
         }
     }
 }
