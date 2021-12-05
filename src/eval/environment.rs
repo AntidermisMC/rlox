@@ -1,3 +1,4 @@
+use crate::ast::functions::NativeFunction;
 use crate::ast::types::{Value, ValueType};
 use crate::eval::runtime_error::RuntimeError;
 use std::collections::HashMap;
@@ -24,11 +25,8 @@ impl Environment {
     }
 
     pub fn define(&mut self, identifier: String, value: ValueType) {
-        if let Some(map) = self.stack.first_mut() {
-            map.insert(identifier, value);
-        } else {
-            self.global.insert(identifier, value);
-        }
+        let map = self.stack.first_mut().unwrap_or(&mut self.global);
+        map.insert(identifier, value);
     }
 
     pub fn assign(&mut self, ident: String, value: Value) -> super::Result<()> {
