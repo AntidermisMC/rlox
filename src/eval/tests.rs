@@ -1,6 +1,7 @@
 use crate::ast::expressions::ExpressionVisitor;
 use crate::ast::statements::StatementVisitor;
 use crate::ast::types::ValueType;
+use crate::eval::builtins::test_prelude;
 use crate::eval::out::OutputStream;
 use crate::eval::Evaluator;
 use crate::eval::ValueType::*;
@@ -122,6 +123,7 @@ gen_tests_expr!(complex_expressions,
 fn assert_eval_stmts(code: &str, expected: &str) {
     let statements = parse(&mut TokenStream::new(code)).unwrap();
     let mut evaluator = Evaluator::new(OutputStream::File(std::string::String::new()));
+    evaluator.register_prelude(test_prelude());
     for stmt in &statements.stmts {
         evaluator.visit_statement(&stmt).unwrap();
     }
@@ -273,3 +275,5 @@ for (var b = 1; a < 10000; b = temp + b) {
 ",
     "011235813213455891442333776109871597258441816765"
 );
+
+gen_tests!(native_function, r#"print hello("Hugo");"#, "Hello, Hugo");

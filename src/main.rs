@@ -3,6 +3,7 @@ use std::io::{Read, Write};
 
 use crate::ast::statements::StatementVisitor;
 use crate::eval::out::OutputStream;
+use crate::eval::prelude;
 
 use crate::scanning::TokenStream;
 
@@ -59,6 +60,7 @@ fn run(code: &mut str, out: OutputStream) -> Option<u8> {
     let mut tokens = TokenStream::new(code);
     let tree = parsing::parse(&mut tokens);
     let mut evaluator = eval::Evaluator::new(out);
+    evaluator.register_prelude(prelude());
     match tree {
         Err(e) => print!("{}", e),
         Ok(stmts) => {

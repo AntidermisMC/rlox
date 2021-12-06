@@ -11,7 +11,7 @@ pub enum ValueType {
     Boolean(bool),
     Nil,
     Object(Object),
-    NativeFunction(fn(Vec<ValueType>) -> Result<ValueType>, usize),
+    NativeFunction(NativeFunction, usize),
 }
 
 #[derive(PartialEq, Debug, Clone)]
@@ -31,6 +31,8 @@ pub enum Type {
 }
 
 pub type Object = Rc<HashMap<String, Value>>;
+
+pub type NativeFunction = fn(Vec<ValueType>, CodeSpan) -> Result<ValueType>;
 
 impl ValueType {
     pub fn as_type(&self) -> Type {

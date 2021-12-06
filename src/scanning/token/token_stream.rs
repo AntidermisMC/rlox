@@ -220,7 +220,9 @@ mod tests {
         assert_eq!(crate::scanning::to_string(vec), expected);
     }
 
-    #[ignore] // Panic pause when running tests is annoying. TODO another day: find a better way.
+    // If you are using a Jetbrains IDE, you might need to change some settings to prevent the
+    // debugger to break automatically when running tests in debug mode.
+    // Preferences | Build, Execution, Deployment | Debugger | Rust | Break on panic
     #[test]
     #[should_panic]
     fn back_from_start() {

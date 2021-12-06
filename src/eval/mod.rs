@@ -3,6 +3,7 @@ use std::fmt::Write;
 use std::rc::Rc;
 
 use crate::ast::declarations::VariableDeclaration;
+pub use builtins::prelude;
 use runtime_error::RuntimeError;
 
 use crate::ast::expressions::{
@@ -10,10 +11,9 @@ use crate::ast::expressions::{
     Identifier, Literal, Unary, UnaryOperator,
 };
 use crate::ast::statements::{Conditional, ForLoop, Statement, StatementVisitor, WhileLoop};
-use crate::ast::types::{Type, Value, ValueType};
+use crate::ast::types::{NativeFunction, Type, Value, ValueType};
 use crate::ast::LiteralValue;
 use crate::code_span::CodeSpan;
-use crate::eval::builtins::{prelude, NativeFunction};
 use crate::eval::environment::Environment;
 use crate::eval::out::OutputStream;
 use crate::eval::RuntimeError::{DivisionByZero, MismatchedTypes};
@@ -40,10 +40,9 @@ impl Evaluator {
     }
 
     pub fn register_prelude(&mut self, prelude: Vec<(&str, NativeFunction, usize)>) {
-        let prelude = prelude();
         for (name, function, arity) in prelude {
             self.env
-                .define(name, ValueType::NativeFunction(function, arity));
+                .define(name.to_string(), ValueType::NativeFunction(function, arity));
         }
     }
 }
@@ -254,7 +253,6 @@ impl ExpressionVisitor for Evaluator {
         }
 
         match callee.value {
-            // TODO check arity
             ValueType::NativeFunction(f, arity) => {
                 if arguments.len() != arity {
                     Err(RuntimeError::InvalidArgumentCount(
@@ -264,7 +262,7 @@ impl ExpressionVisitor for Evaluator {
                     ))
                 } else {
                     Ok(Value {
-                        value: f(arguments)?,
+                        value: f(arguments, call.location)?,
                         location: call.location,
                     })
                 }
