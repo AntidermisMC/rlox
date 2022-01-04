@@ -11,7 +11,7 @@ use crate::ast::expressions::{
     Identifier, Literal, Unary, UnaryOperator,
 };
 use crate::ast::statements::{Conditional, ForLoop, Statement, StatementVisitor, WhileLoop};
-use crate::ast::types::{NativeFunction, Type, Value, ValueType};
+use crate::ast::types::{NativeFunction, Object, Type, Value, ValueType};
 use crate::ast::LiteralValue;
 use crate::code_span::CodeSpan;
 use crate::eval::environment::Environment;
@@ -99,6 +99,7 @@ impl StatementVisitor for Evaluator {
             Statement::Conditional(c) => self.visit_conditional(c),
             Statement::WhileLoop(w) => self.visit_while_loop(w),
             Statement::ForLoop(f) => self.visit_for_loop(f),
+            Statement::FunctionDeclaration(_) => todo!(),
         }
     }
 
@@ -344,7 +345,7 @@ fn test_equality(left: &Value, right: &Value) -> bool {
         (ValueType::Nil, ValueType::Nil) => true,
         (ValueType::Number(l), ValueType::Number(r)) => l == r,
         (ValueType::String(l), ValueType::String(r)) => l == r,
-        (ValueType::Object(l), ValueType::Object(r)) => *l == *r,
+        (ValueType::Object(Object::Object(l)), ValueType::Object(Object::Object(r))) => *l == *r,
         (_, _) => false,
     }
 }

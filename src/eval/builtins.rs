@@ -1,9 +1,6 @@
-use crate::ast::types::{NativeFunction, Type, ValueType};
+use crate::ast::types::{NativeFunction, ValueType};
 use crate::code_span::CodeSpan;
-use crate::eval::runtime_error::RuntimeError;
 use crate::eval::Result;
-use std::collections::HashSet;
-use std::rc::Rc;
 
 fn clock(_: Vec<ValueType>, _: CodeSpan) -> Result<ValueType> {
     Ok(ValueType::Number(
@@ -25,11 +22,13 @@ pub fn test_prelude() -> Vec<(&'static str, NativeFunction, usize)> {
             .first()
             .expect("native function called with incorrect number of arguments");
         match arg {
-            ValueType::String(s) => Ok(ValueType::String(Rc::new(format!("Hello, {}", s)))),
-            _ => Err(RuntimeError::MismatchedTypes(
+            ValueType::String(s) => {
+                Ok(ValueType::String(std::rc::Rc::new(format!("Hello, {}", s))))
+            }
+            _ => Err(crate::eval::runtime_error::RuntimeError::MismatchedTypes(
                 span,
                 arg.as_type(),
-                HashSet::from([Type::String]),
+                std::collections::HashSet::from([crate::ast::types::Type::String]),
             )),
         }
     }

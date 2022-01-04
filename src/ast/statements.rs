@@ -1,6 +1,6 @@
-use crate::ast::declarations::VariableDeclaration;
+use crate::ast::declarations::{FunctionDeclaration, VariableDeclaration};
 use crate::ast::expressions::Expression;
-use std::fmt::{Display, Formatter};
+use std::fmt::{Debug, Display, Formatter};
 
 pub enum Statement {
     Print(Expression),
@@ -10,10 +10,20 @@ pub enum Statement {
     Conditional(Box<Conditional>),
     WhileLoop(Box<WhileLoop>),
     ForLoop(Box<ForLoop>),
+    FunctionDeclaration(FunctionDeclaration),
 }
 
 pub struct Statements {
     pub stmts: Vec<Statement>,
+}
+
+impl Debug for Statements {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        for stmt in &self.stmts {
+            writeln!(f, "{}", stmt)?
+        }
+        Ok(())
+    }
 }
 
 pub struct Conditional {
@@ -53,6 +63,7 @@ impl Display for Statement {
             Statement::Conditional(c) => write!(f, "{}", c),
             Statement::WhileLoop(l) => write!(f, "while ({}) {}", l.condition, l.statement),
             Statement::ForLoop(l) => write!(f, "{}", l),
+            Statement::FunctionDeclaration(fd) => write!(f, "{}", fd),
         }
     }
 }

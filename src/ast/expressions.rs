@@ -301,6 +301,12 @@ impl Display for Expression {
     }
 }
 
+impl Display for Identifier {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.ident)
+    }
+}
+
 pub trait ExpressionNode {
     fn accept<T: ExpressionVisitor>(&self, visitor: &mut T) -> T::Return;
 }

@@ -1,4 +1,5 @@
 use crate::ast::expressions::{Expression, Identifier};
+use crate::ast::types::Function;
 use crate::ast::LiteralValue;
 use std::fmt::{Display, Formatter};
 
@@ -18,5 +19,16 @@ impl Display for VariableDeclaration {
                 expr => format!(" = {}", expr),
             }
         )
+    }
+}
+
+pub struct FunctionDeclaration {
+    pub name: Identifier,
+    pub function: Function,
+}
+
+impl Display for FunctionDeclaration {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "fun {}{}", self.name, self.function)
     }
 }

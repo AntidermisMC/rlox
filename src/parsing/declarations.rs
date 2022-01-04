@@ -2,6 +2,7 @@ use super::Result;
 use crate::ast::declarations::VariableDeclaration;
 use crate::ast::expressions::{Expression, Identifier, Literal};
 use crate::ast::statements::Statement;
+use crate::ast::types::Function;
 use crate::ast::LiteralValue;
 use crate::code_span::CodeSpan;
 use crate::parsing::statements::parse_statement;
@@ -10,12 +11,14 @@ use crate::scanning::{Token, TokenStream, TokenType};
 
 pub fn parse_declaration(tokens: &mut TokenStream) -> Result<Statement> {
     if let Some(t) = tokens.peek() {
-        if t.consume() == TokenType::Var {
-            let var_dec = parse_variable_declaration(tokens)?;
-            consume(tokens, TokenType::Semicolon)?;
-            Ok(Statement::VariableDeclaration(var_dec))
-        } else {
-            parse_statement(tokens)
+        match t.get_type() {
+            TokenType::Var => {
+                let var_dec = parse_variable_declaration(tokens)?;
+                consume(tokens, TokenType::Semicolon)?;
+                Ok(Statement::VariableDeclaration(var_dec))
+            }
+            TokenType::Fun => parse_function_declaration(tokens),
+            _ => parse_statement(tokens),
         }
     } else {
         Err(ParsingError::UnexpectedEndOfTokenStream(
@@ -57,6 +60,16 @@ pub fn parse_variable_declaration(tokens: &mut TokenStream) -> Result<VariableDe
             tokens.current_position(),
         )),
     }
+}
+
+pub fn parse_function_declaration(tokens: &mut TokenStream) -> Result<Statement> {
+    consume(tokens, TokenType::Fun)?;
+
+    todo!()
+}
+
+pub fn parse_function(_tokens: &mut TokenStream) -> Result<Function> {
+    todo!()
 }
 
 #[cfg(test)]
