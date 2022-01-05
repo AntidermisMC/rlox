@@ -1,11 +1,11 @@
 use super::Result;
-use crate::ast::declarations::VariableDeclaration;
+use crate::ast::declarations::{FunctionDeclaration, VariableDeclaration};
 use crate::ast::expressions::{Expression, Identifier, Literal};
-use crate::ast::statements::Statement;
+use crate::ast::statements::{Statement, Statements};
 use crate::ast::types::Function;
 use crate::ast::LiteralValue;
 use crate::code_span::CodeSpan;
-use crate::parsing::statements::parse_statement;
+use crate::parsing::statements::{parse_declarations, parse_statement};
 use crate::parsing::{consume, parse_expression, ParsingError};
 use crate::scanning::{Token, TokenStream, TokenType};
 
@@ -65,6 +65,39 @@ pub fn parse_variable_declaration(tokens: &mut TokenStream) -> Result<VariableDe
 pub fn parse_function_declaration(tokens: &mut TokenStream) -> Result<Statement> {
     consume(tokens, TokenType::Fun)?;
 
+    match tokens.next() {
+        Some(token) => {
+            let span = token.get_span();
+            if let TokenType::Identifier(s) = token.get_type() {
+                consume(tokens, TokenType::LeftParen)?;
+                let params = parse_parameters(tokens)?;
+                consume(tokens, TokenType::RightParen)?;
+                consume(tokens, TokenType::LeftBrace)?;
+                let stmts = parse_declarations(tokens);
+                consume(tokens, TokenType::RightBrace)?;
+
+                Ok(Statement::FunctionDeclaration(FunctionDeclaration {
+                    name: Identifier {
+                        ident: s.clone(),
+                        location: span,
+                    },
+                    function: Function {
+                        args: params,
+                        body: Statements { stmts },
+                        span,
+                    },
+                }))
+            } else {
+                Err(ParsingError::UnexpectedToken(token))
+            }
+        }
+        None => Err(ParsingError::UnexpectedEndOfTokenStream(
+            tokens.current_position(),
+        )),
+    }
+}
+
+fn parse_parameters(_tokens: &mut TokenStream) -> Result<Vec<Identifier>> {
     todo!()
 }
 

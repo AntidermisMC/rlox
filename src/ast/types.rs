@@ -1,3 +1,4 @@
+use crate::ast::expressions::Identifier;
 use crate::ast::statements::Statements;
 use crate::code_span::CodeSpan;
 use crate::eval::Result;
@@ -42,9 +43,9 @@ pub type NativeFunction = fn(Vec<ValueType>, CodeSpan) -> Result<ValueType>;
 
 #[derive(Debug)]
 pub struct Function {
-    args: Vec<String>,
-    body: Statements,
-    span: CodeSpan,
+    pub args: Vec<Identifier>,
+    pub body: Statements,
+    pub span: CodeSpan,
 }
 
 impl ValueType {
