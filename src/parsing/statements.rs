@@ -205,7 +205,7 @@ mod tests {
     );
 
     gen_tests!(
-        test_statements,
+        test_statement,
         parse_statement,
         "1;",
         "print 2;",
@@ -241,4 +241,11 @@ mod tests {
         "for (;;) print 1;",
         "for (var i = 0; i < 10; i = i + 1) print i;"
     );
+
+    #[test]
+    fn test_statements() {
+        let parsed = parse_declarations(&mut TokenStream::new("var a = 1;\n print a;\n"));
+        let stmts = Statements { stmts: parsed };
+        assert_eq!("var a = 1;\nprint a;\n", stmts.to_string());
+    }
 }

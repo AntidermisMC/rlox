@@ -137,6 +137,6 @@ impl Display for Function {
             }
         }
 
-        write!(f, "{{ {} }}", self.body)
+        write!(f, ") {{ {} }}", self.body)
     }
 }

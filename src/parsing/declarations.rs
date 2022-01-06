@@ -70,7 +70,7 @@ pub fn parse_function_declaration(tokens: &mut TokenStream) -> Result<Statement>
             let span = token.get_span();
             if let TokenType::Identifier(s) = token.get_type() {
                 consume(tokens, TokenType::LeftParen)?;
-                let params = parse_parameters(tokens)?;
+                let params = parse_parameters(tokens);
                 consume(tokens, TokenType::RightParen)?;
                 consume(tokens, TokenType::LeftBrace)?;
                 let stmts = parse_declarations(tokens);
@@ -97,12 +97,31 @@ pub fn parse_function_declaration(tokens: &mut TokenStream) -> Result<Statement>
     }
 }
 
-fn parse_parameters(_tokens: &mut TokenStream) -> Result<Vec<Identifier>> {
-    todo!()
-}
+fn parse_parameters(tokens: &mut TokenStream) -> Vec<Identifier> {
+    let mut params = Vec::<Identifier>::new();
+    let mut save = tokens.save_position();
 
-pub fn parse_function(_tokens: &mut TokenStream) -> Result<Function> {
-    todo!()
+    while let Some(token) = tokens.next() {
+        if let TokenType::Identifier(ident) = token.get_type() {
+            params.push(Identifier {
+                ident: ident.clone(),
+                location: token.get_span(),
+            });
+            save = tokens.save_position();
+            if let Some(t) = tokens.peek() {
+                if let TokenType::Comma = t.get_type() {
+                    tokens.next();
+                    continue;
+                }
+            }
+            break;
+        } else {
+            break;
+        }
+    }
+
+    tokens.load_position(save);
+    params
 }
 
 #[cfg(test)]
@@ -116,5 +135,13 @@ mod tests {
         "var a = 1;",
         "var b;",
         "var c = 1 + 1 / 2;"
+    );
+
+    gen_tests!(
+        test_function_declarations,
+        parse_declaration,
+        //"fun my_fun() {  }",
+        //"fun f(a) { print a;\n }",
+        "fun g(a, b, c) { print a + b * c;\nprint \"hello\";\n }"
     );
 }
