@@ -8,6 +8,7 @@ use crate::code_span::CodeSpan;
 use crate::parsing::statements::{parse_declarations, parse_statement};
 use crate::parsing::{consume, parse_expression, ParsingError};
 use crate::scanning::{Token, TokenStream, TokenType};
+use std::rc::Rc;
 
 pub fn parse_declaration(tokens: &mut TokenStream) -> Result<Statement> {
     if let Some(t) = tokens.peek() {
@@ -81,11 +82,11 @@ pub fn parse_function_declaration(tokens: &mut TokenStream) -> Result<Statement>
                         ident: s.clone(),
                         location: span,
                     },
-                    function: Function {
+                    function: Rc::new(Function {
                         args: params,
                         body: Statements { stmts },
                         span,
-                    },
+                    }),
                 }))
             } else {
                 Err(ParsingError::UnexpectedToken(token))
@@ -140,8 +141,8 @@ mod tests {
     gen_tests!(
         test_function_declarations,
         parse_declaration,
-        //"fun my_fun() {  }",
-        //"fun f(a) { print a;\n }",
+        "fun my_fun() {  }",
+        "fun f(a) { print a;\n }",
         "fun g(a, b, c) { print a + b * c;\nprint \"hello\";\n }"
     );
 }

@@ -277,3 +277,13 @@ for (var b = 1; a < 10000; b = temp + b) {
 );
 
 gen_tests!(native_function, r#"print hello("Hugo");"#, "Hello, Hugo");
+
+gen_tests!(function_declaration_simple, "fun a() { }", "");
+
+gen_tests!(function_declaration_args, "fun a(a, b, c) { }", "");
+
+gen_tests!(
+    function_declaration_body,
+    "fun a() { var a = 2 + 3; print a; }",
+    ""
+);

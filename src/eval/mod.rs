@@ -2,7 +2,7 @@ use std::collections::HashSet;
 use std::fmt::Write;
 use std::rc::Rc;
 
-use crate::ast::declarations::VariableDeclaration;
+use crate::ast::declarations::{FunctionDeclaration, VariableDeclaration};
 pub use builtins::prelude;
 use runtime_error::RuntimeError;
 
@@ -99,7 +99,7 @@ impl StatementVisitor for Evaluator {
             Statement::Conditional(c) => self.visit_conditional(c),
             Statement::WhileLoop(w) => self.visit_while_loop(w),
             Statement::ForLoop(f) => self.visit_for_loop(f),
-            Statement::FunctionDeclaration(_) => todo!(),
+            Statement::FunctionDeclaration(f) => self.visit_function_declaration(f),
         }
     }
 
@@ -155,6 +155,15 @@ impl StatementVisitor for Evaluator {
             }
         }
         self.env.pop_env();
+
+        Ok(())
+    }
+
+    fn visit_function_declaration(&mut self, fd: &FunctionDeclaration) -> Self::Return {
+        self.env.define(
+            fd.name.ident.to_string(),
+            ValueType::Function(fd.function.clone()),
+        );
 
         Ok(())
     }

@@ -109,4 +109,5 @@ pub trait StatementVisitor {
     fn visit_conditional(&mut self, cond: &Conditional) -> Self::Return;
     fn visit_while_loop(&mut self, while_loop: &WhileLoop) -> Self::Return;
     fn visit_for_loop(&mut self, for_loop: &ForLoop) -> Self::Return;
+    fn visit_function_declaration(&mut self, fd: &FunctionDeclaration) -> Self::Return;
 }

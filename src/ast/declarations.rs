@@ -2,6 +2,7 @@ use crate::ast::expressions::{Expression, Identifier};
 use crate::ast::types::Function;
 use crate::ast::LiteralValue;
 use std::fmt::{Display, Formatter};
+use std::rc::Rc;
 
 pub struct VariableDeclaration {
     pub name: Identifier,
@@ -24,7 +25,7 @@ impl Display for VariableDeclaration {
 
 pub struct FunctionDeclaration {
     pub name: Identifier,
-    pub function: Function,
+    pub function: Rc<Function>,
 }
 
 impl Display for FunctionDeclaration {
