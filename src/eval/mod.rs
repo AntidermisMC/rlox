@@ -277,6 +277,29 @@ impl ExpressionVisitor for Evaluator {
                     })
                 }
             }
+            ValueType::Function(f) => {
+                if arguments.len() != f.args.len() {
+                    Err(RuntimeError::InvalidArgumentCount(
+                        call.location,
+                        f.args.len(),
+                        arguments.len(),
+                    ))
+                } else {
+                    self.env.push_env();
+                    for (arg, value) in f.args.iter().zip(arguments) {
+                        self.env.define(arg.ident.clone(), value);
+                    }
+                    for stmt in &f.body.stmts {
+                        self.visit_statement(stmt)?;
+                    }
+                    self.env.pop_env();
+
+                    Ok(Value {
+                        location: f.span,
+                        value: ValueType::Nil,
+                    })
+                }
+            }
             _ => Err(RuntimeError::NotCallable(callee.location)),
         }
     }
