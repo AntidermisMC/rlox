@@ -46,11 +46,10 @@ impl Environment {
 
     pub fn get(&self, identifier: &str) -> Option<&ValueType> {
         for map in &self.stack {
-            if let Some(value) = map.get(&identifier.to_string()) {
-                // TODO why do I need .to_string() ?
+            if let Some(value) = map.get(identifier) {
                 return Some(value);
             }
         }
-        self.global.get(&identifier.to_string()) // TODO why do I need .to_string() ?
+        self.global.get(identifier)
     }
 }
