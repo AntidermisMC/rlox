@@ -2,7 +2,7 @@ use crate::ast::expressions::ExpressionVisitor;
 use crate::ast::statements::StatementVisitor;
 use crate::ast::types::ValueType;
 use crate::eval::builtins::test_prelude;
-use crate::eval::out::OutputStream;
+use crate::eval::output_stream::OutputStream;
 use crate::eval::Evaluator;
 use crate::eval::ValueType::*;
 use crate::parsing::{parse, parse_expression};

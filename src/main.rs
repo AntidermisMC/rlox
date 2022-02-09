@@ -2,7 +2,7 @@ use std::env;
 use std::io::{Read, Write};
 
 use crate::ast::statements::StatementVisitor;
-use crate::eval::out::OutputStream;
+use crate::eval::output_stream::OutputStream;
 use crate::eval::prelude;
 
 use crate::scanning::TokenStream;

@@ -15,12 +15,12 @@ use crate::ast::types::{NativeFunction, Object, Type, Value, ValueType};
 use crate::ast::LiteralValue;
 use crate::code_span::CodeSpan;
 use crate::eval::environment::Environment;
-use crate::eval::out::OutputStream;
+use crate::eval::output_stream::OutputStream;
 use crate::eval::RuntimeError::{DivisionByZero, MismatchedTypes};
 
 mod builtins;
 mod environment;
-pub mod out;
+pub mod output_stream;
 mod runtime_error;
 
 #[cfg(test)]
