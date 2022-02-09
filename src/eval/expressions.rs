@@ -132,14 +132,22 @@ impl ExpressionVisitor for Evaluator {
                     for (arg, value) in f.args.iter().zip(arguments) {
                         self.env.define(arg.ident.clone(), value);
                     }
+                    let mut ret = ValueType::Nil;
                     for stmt in &f.body.stmts {
-                        self.visit_statement(stmt)?;
+                        match self.visit_statement(stmt) {
+                            Ok(()) => (),
+                            Err(RuntimeError::Return(value)) => {
+                                ret = value.value;
+                                break;
+                            }
+                            Err(err) => return Err(err),
+                        }
                     }
                     self.env.pop_env();
 
                     Ok(Value {
                         location: f.span,
-                        value: ValueType::Nil,
+                        value: ret,
                     })
                 }
             }

@@ -29,7 +29,7 @@ impl StatementVisitor for Evaluator {
             Statement::WhileLoop(w) => self.visit_while_loop(w),
             Statement::ForLoop(f) => self.visit_for_loop(f),
             Statement::FunctionDeclaration(f) => self.visit_function_declaration(f),
-            Statement::Return(expr) => todo!(),
+            Statement::Return(expr) => self.visit_return(expr),
         }
     }
 
@@ -96,5 +96,9 @@ impl StatementVisitor for Evaluator {
         );
 
         Ok(())
+    }
+
+    fn visit_return(&mut self, expr: &Expression) -> Self::Return {
+        Err(RuntimeError::Return(self.visit_expression(expr)?))
     }
 }

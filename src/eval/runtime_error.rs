@@ -1,3 +1,4 @@
+use crate::ast::types::Value;
 use crate::code_span::CodeSpan;
 use crate::eval::Type;
 use std::collections::HashSet;
@@ -16,6 +17,7 @@ pub enum RuntimeError {
     WriteError(CodeSpan),
     NotCallable(CodeSpan),
     InvalidArgumentCount(CodeSpan, usize, usize),
+    Return(Value),
 }
 
 impl RuntimeError {
@@ -27,6 +29,7 @@ impl RuntimeError {
             RuntimeError::WriteError(span) => span,
             RuntimeError::NotCallable(span) => span,
             RuntimeError::InvalidArgumentCount(span, _, _) => span,
+            RuntimeError::Return(value) => &value.location,
         }
     }
 }
@@ -43,6 +46,7 @@ impl Display for RuntimeError {
                 "Invalid argument count (expected {}, got {}",
                 expected, actual
             ),
+            &RuntimeError::Return(value) => "Return outside function".to_string(),
         };
         write!(f, "{}: {}", self.location(), error_type)
     }

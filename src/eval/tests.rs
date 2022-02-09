@@ -293,3 +293,11 @@ gen_tests!(function_call_simple, "fun a(){} a();", "");
 gen_tests!(function_call_body, "fun a(){print 1;} a();", "1");
 
 gen_tests!(function_call_args, "fun a(b){print b;} a(1);", "1");
+
+gen_tests!(function_return, "fun a(){ return 1; } print a();", "1");
+
+gen_tests!(
+    function_naked_return,
+    "fun a(){ return; } print a();",
+    "nil"
+);

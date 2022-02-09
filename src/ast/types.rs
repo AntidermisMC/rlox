@@ -17,7 +17,7 @@ pub enum ValueType {
     Function(Rc<Function>),
 }
 
-#[derive(PartialEq, Clone)]
+#[derive(PartialEq, Clone, Debug)]
 pub struct Value {
     pub location: CodeSpan,
     pub value: ValueType,
