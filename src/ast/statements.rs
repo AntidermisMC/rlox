@@ -1,5 +1,6 @@
 use crate::ast::declarations::{FunctionDeclaration, VariableDeclaration};
 use crate::ast::expressions::Expression;
+use crate::ast::LiteralValue;
 use std::fmt::{Debug, Display, Formatter};
 
 pub enum Statement {
@@ -11,6 +12,7 @@ pub enum Statement {
     WhileLoop(Box<WhileLoop>),
     ForLoop(Box<ForLoop>),
     FunctionDeclaration(FunctionDeclaration),
+    Return(Expression),
 }
 
 pub struct Statements {
@@ -64,6 +66,12 @@ impl Display for Statement {
             Statement::WhileLoop(l) => write!(f, "while ({}) {}", l.condition, l.statement),
             Statement::ForLoop(l) => write!(f, "{}", l),
             Statement::FunctionDeclaration(fd) => write!(f, "{}", fd),
+            Statement::Return(expr) => match expr {
+                Expression::Literal(l) if l.value == LiteralValue::Nil => {
+                    write!(f, "return;")
+                }
+                _ => write!(f, "return {};", expr),
+            },
         }
     }
 }

@@ -100,6 +100,7 @@ impl StatementVisitor for Evaluator {
             Statement::WhileLoop(w) => self.visit_while_loop(w),
             Statement::ForLoop(f) => self.visit_for_loop(f),
             Statement::FunctionDeclaration(f) => self.visit_function_declaration(f),
+            Statement::Return(expr) => todo!(),
         }
     }
 

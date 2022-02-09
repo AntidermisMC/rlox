@@ -1,6 +1,9 @@
 use super::parsing_error::ParsingError;
 use super::Result;
+use crate::ast::expressions::{Expression, Literal};
 use crate::ast::statements::{Conditional, ForLoop, Statement, Statements, WhileLoop};
+use crate::ast::LiteralValue;
+use crate::code_span::CodeSpan;
 use crate::parsing::consume;
 use crate::parsing::declarations::{parse_declaration, parse_variable_declaration};
 use crate::parsing::expressions::parse_expression;
@@ -43,6 +46,7 @@ pub fn parse_statement(tokens: &mut TokenStream) -> Result<Statement> {
             TokenType::If => parse_conditional(tokens),
             TokenType::While => parse_while_loop(tokens),
             TokenType::For => parse_for(tokens),
+            TokenType::Return => parse_return(tokens),
             _ => {
                 let expr = parse_expression(tokens)?;
                 consume(tokens, TokenType::Semicolon)?;
@@ -191,6 +195,24 @@ fn parse_for(tokens: &mut TokenStream) -> Result<Statement> {
     }
 }
 
+fn parse_return(tokens: &mut TokenStream) -> Result<Statement> {
+    consume(tokens, TokenType::Return)?;
+    let expr = if tokens
+        .peek()
+        .map(|t| t.is_of_type(TokenType::Semicolon))
+        .unwrap_or(true)
+    {
+        Expression::Literal(Literal {
+            value: LiteralValue::Nil,
+            location: CodeSpan::new(tokens.current_position(), tokens.current_position()),
+        })
+    } else {
+        parse_expression(tokens)?
+    };
+    consume(tokens, TokenType::Semicolon)?;
+    Ok(Statement::Return(expr))
+}
+
 #[cfg(test)]
 mod tests {
     use super::super::tests::*;
@@ -240,6 +262,14 @@ mod tests {
         parse_statement,
         "for (;;) print 1;",
         "for (var i = 0; i < 10; i = i + 1) print i;"
+    );
+
+    gen_tests!(
+        test_return,
+        parse_statement,
+        "return;",
+        "return myvar;",
+        "return 1 + 2;"
     );
 
     #[test]
