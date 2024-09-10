@@ -1,11 +1,13 @@
-use std::env;
-use std::io::{Read, Write};
+use std::{
+    env,
+    io::{Read, Write},
+};
 
-use crate::ast::statements::StatementVisitor;
-use crate::eval::output_stream::OutputStream;
-use crate::eval::prelude;
-
-use crate::scanning::TokenStream;
+use crate::{
+    ast::statements::StatementVisitor,
+    eval::{output_stream::OutputStream, prelude},
+    scanning::TokenStream,
+};
 
 mod ast;
 mod code_span;

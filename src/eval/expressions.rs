@@ -1,16 +1,25 @@
-use crate::ast::expressions::{
-    Assignment, Binary, BinaryOperator, Call, Expression, ExpressionVisitor, Identifier, Literal,
-    Unary, UnaryOperator,
+use std::{collections::HashSet, rc::Rc};
+
+use crate::{
+    ast::{
+        expressions::{
+            Assignment, Binary, BinaryOperator, Call, Expression, ExpressionVisitor, Identifier,
+            Literal, Unary, UnaryOperator,
+        },
+        types::{Object, Type, Value, ValueType},
+        LiteralValue,
+    },
+    code_span::CodeSpan,
+    eval,
+    eval::{
+        runtime_error::{
+            RuntimeError,
+            RuntimeError::{DivisionByZero, MismatchedTypes},
+        },
+        Evaluator,
+    },
+    StatementVisitor,
 };
-use crate::ast::types::{Object, Type, Value, ValueType};
-use crate::ast::LiteralValue;
-use crate::code_span::CodeSpan;
-use crate::eval::runtime_error::RuntimeError;
-use crate::eval::runtime_error::RuntimeError::{DivisionByZero, MismatchedTypes};
-use crate::eval::Evaluator;
-use crate::{eval, StatementVisitor};
-use std::collections::HashSet;
-use std::rc::Rc;
 
 impl ExpressionVisitor for Evaluator {
     type Return = eval::Result<Value>;

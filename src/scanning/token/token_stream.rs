@@ -1,8 +1,14 @@
-use crate::location::Location;
-use crate::location_tracking_iterator::LocationTrackingIterator;
-use crate::scanning::token::token_stream::Position::{End, Index};
-use crate::scanning::{scan, Token};
 use std::str::Chars;
+
+use crate::{
+    location::Location,
+    location_tracking_iterator::LocationTrackingIterator,
+    scanning::{
+        scan,
+        token::token_stream::Position::{End, Index},
+        Token,
+    },
+};
 
 pub enum Position {
     End,
@@ -13,7 +19,8 @@ pub struct TokenStreamState {
     position: usize,
 }
 
-/// TokenStream is an iterator that returns lazily-scanned tokens and allows backtracking.
+/// TokenStream is an iterator that returns lazily-scanned tokens and allows
+/// backtracking.
 pub struct TokenStream<'a> {
     it: LocationTrackingIterator<Chars<'a>>,
     loc: Location,
@@ -120,8 +127,7 @@ impl<'a> Iterator for TokenStream<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::scanning::token::token_stream::Position::Index;
-    use crate::scanning::{scan_all, Token, TokenStream};
+    use crate::scanning::{scan_all, token::token_stream::Position::Index, Token, TokenStream};
 
     #[test]
     fn next() {
@@ -220,9 +226,10 @@ mod tests {
         assert_eq!(crate::scanning::to_string(vec), expected);
     }
 
-    // If you are using a Jetbrains IDE, you might need to change some settings to prevent the
-    // debugger to break automatically when running tests in debug mode.
-    // Preferences | Build, Execution, Deployment | Debugger | Rust | Break on panic
+    // If you are using a Jetbrains IDE, you might need to change some settings to
+    // prevent the debugger to break automatically when running tests in debug
+    // mode. Preferences | Build, Execution, Deployment | Debugger | Rust |
+    // Break on panic
     #[test]
     #[should_panic]
     fn back_from_start() {

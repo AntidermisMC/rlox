@@ -1,6 +1,9 @@
-use crate::ast::types::{Value, ValueType};
-use crate::eval::runtime_error::RuntimeError;
 use std::collections::HashMap;
+
+use crate::{
+    ast::types::{Value, ValueType},
+    eval::runtime_error::RuntimeError,
+};
 
 pub struct Environment {
     global: HashMap<String, ValueType>,

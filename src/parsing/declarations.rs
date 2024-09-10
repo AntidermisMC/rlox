@@ -1,14 +1,22 @@
-use super::Result;
-use crate::ast::declarations::{ClassDeclaration, FunctionDeclaration, VariableDeclaration};
-use crate::ast::expressions::{Expression, Identifier, Literal};
-use crate::ast::statements::{Statement, Statements};
-use crate::ast::types::Function;
-use crate::ast::LiteralValue;
-use crate::code_span::CodeSpan;
-use crate::parsing::statements::{parse_declarations, parse_statement};
-use crate::parsing::{consume, parse_expression, ParsingError};
-use crate::scanning::{Token, TokenStream, TokenType};
 use std::rc::Rc;
+
+use super::Result;
+use crate::{
+    ast::{
+        declarations::{ClassDeclaration, FunctionDeclaration, VariableDeclaration},
+        expressions::{Expression, Identifier, Literal},
+        statements::{Statement, Statements},
+        types::Function,
+        LiteralValue,
+    },
+    code_span::CodeSpan,
+    parsing::{
+        consume, parse_expression,
+        statements::{parse_declarations, parse_statement},
+        ParsingError,
+    },
+    scanning::{Token, TokenStream, TokenType},
+};
 
 pub fn parse_declaration(tokens: &mut TokenStream) -> Result<Statement> {
     if let Some(t) = tokens.peek() {
@@ -48,12 +56,20 @@ pub fn parse_class_declaration(tokens: &mut TokenStream) -> Result<ClassDeclarat
                         methods.push(parse_function_declaration(tokens)?);
                     }
                     consume(tokens, TokenType::RightBrace)?;
-                    Ok(ClassDeclaration { name: Identifier { ident: name, location: span }, methods })
+                    Ok(ClassDeclaration {
+                        name: Identifier {
+                            ident: name,
+                            location: span,
+                        },
+                        methods,
+                    })
                 }
                 token_type => Err(ParsingError::UnexpectedToken(Token::new(token_type, span))),
             }
         }
-        None => Err(ParsingError::UnexpectedEndOfTokenStream(tokens.current_position())),
+        None => Err(ParsingError::UnexpectedEndOfTokenStream(
+            tokens.current_position(),
+        )),
     }
 }
 
@@ -156,8 +172,7 @@ fn parse_parameters(tokens: &mut TokenStream) -> Vec<Identifier> {
 
 #[cfg(test)]
 mod tests {
-    use super::super::tests::*;
-    use super::*;
+    use super::{super::tests::*, *};
 
     gen_tests!(
         test_variable_declarations,

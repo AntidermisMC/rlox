@@ -1,10 +1,14 @@
-use crate::ast::expressions::Identifier;
-use crate::ast::statements::Statements;
-use crate::code_span::CodeSpan;
-use crate::eval::Result;
-use std::collections::HashMap;
-use std::fmt::{Debug, Display, Formatter};
-use std::rc::Rc;
+use std::{
+    collections::HashMap,
+    fmt::{Debug, Display, Formatter},
+    rc::Rc,
+};
+
+use crate::{
+    ast::{expressions::Identifier, statements::Statements},
+    code_span::CodeSpan,
+    eval::Result,
+};
 
 #[derive(Clone, Debug)]
 pub enum ValueType {

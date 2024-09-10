@@ -1,10 +1,10 @@
 pub use builtins::prelude;
 use runtime_error::RuntimeError;
 
-use crate::ast::types::{NativeFunction, Type, Value, ValueType};
-
-use crate::eval::environment::Environment;
-use crate::eval::output_stream::OutputStream;
+use crate::{
+    ast::types::{NativeFunction, Type, Value, ValueType},
+    eval::{environment::Environment, output_stream::OutputStream},
+};
 
 mod builtins;
 mod environment;

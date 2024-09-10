@@ -1,13 +1,18 @@
-use super::parsing_error::ParsingError;
-use super::Result;
-use crate::ast::expressions::{Expression, Literal};
-use crate::ast::statements::{Conditional, ForLoop, Statement, Statements, WhileLoop};
-use crate::ast::LiteralValue;
-use crate::code_span::CodeSpan;
-use crate::parsing::consume;
-use crate::parsing::declarations::{parse_declaration, parse_variable_declaration};
-use crate::parsing::expressions::parse_expression;
-use crate::scanning::{TokenStream, TokenType};
+use super::{parsing_error::ParsingError, Result};
+use crate::{
+    ast::{
+        expressions::{Expression, Literal},
+        statements::{Conditional, ForLoop, Statement, Statements, WhileLoop},
+        LiteralValue,
+    },
+    code_span::CodeSpan,
+    parsing::{
+        consume,
+        declarations::{parse_declaration, parse_variable_declaration},
+        expressions::parse_expression,
+    },
+    scanning::{TokenStream, TokenType},
+};
 
 pub fn parse_declarations(tokens: &mut TokenStream) -> Vec<Statement> {
     let mut stmts = Vec::new();
@@ -215,8 +220,7 @@ fn parse_return(tokens: &mut TokenStream) -> Result<Statement> {
 
 #[cfg(test)]
 mod tests {
-    use super::super::tests::*;
-    use super::*;
+    use super::{super::tests::*, *};
 
     gen_tests!(
         test_print_statements,

@@ -1,9 +1,11 @@
-use crate::ast::declarations::{FunctionDeclaration, VariableDeclaration};
-use crate::ast::expressions::Expression;
-use crate::ast::LiteralValue;
 use std::fmt::{Debug, Display, Formatter};
 
 use super::declarations::ClassDeclaration;
+use crate::ast::{
+    declarations::{FunctionDeclaration, VariableDeclaration},
+    expressions::Expression,
+    LiteralValue,
+};
 
 pub enum Statement {
     Print(Expression),

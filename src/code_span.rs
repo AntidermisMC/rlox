@@ -1,5 +1,6 @@
-use crate::location::Location;
 use std::fmt::{Debug, Display, Formatter};
+
+use crate::location::Location;
 
 /// Represents a span of code over the source, possibly over multiple lines.
 #[derive(Copy, Clone, PartialEq)]

@@ -1,9 +1,10 @@
-use crate::ast::types::Value;
-use crate::code_span::CodeSpan;
-use crate::eval::Type;
-use std::collections::HashSet;
-use std::error::Error;
-use std::fmt::{Display, Formatter};
+use std::{
+    collections::HashSet,
+    error::Error,
+    fmt::{Display, Formatter},
+};
+
+use crate::{ast::types::Value, code_span::CodeSpan, eval::Type};
 
 #[derive(Debug)]
 pub enum RuntimeError {

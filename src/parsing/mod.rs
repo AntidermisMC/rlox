@@ -3,11 +3,14 @@ mod expressions;
 mod parsing_error;
 mod statements;
 
-use crate::ast::statements::Statements;
-use crate::parsing::declarations::parse_declaration;
-use crate::scanning::{Token, TokenStream, TokenType};
 pub use expressions::parse_expression;
 pub use parsing_error::ParsingError;
+
+use crate::{
+    ast::statements::Statements,
+    parsing::declarations::parse_declaration,
+    scanning::{Token, TokenStream, TokenType},
+};
 
 macro_rules! try_parse {
     // TODO maybe remove this ? Not actually necessary atm, maybe when parser is complete
@@ -36,7 +39,8 @@ pub fn parse(tokens: &mut TokenStream) -> Result<Statements> {
     Ok(Statements { stmts })
 }
 
-/// Consumes the first token of the stream if it is of the right type, else errors.
+/// Consumes the first token of the stream if it is of the right type, else
+/// errors.
 #[must_use]
 fn consume(tokens: &mut TokenStream, token: TokenType) -> Result<Token> {
     match tokens.peek() {

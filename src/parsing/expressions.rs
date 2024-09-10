@@ -1,13 +1,17 @@
-use crate::ast::expressions::{
-    Assignment, Binary, BinaryOperator, Call, Expression, Identifier, Literal, Unary, UnaryOperator,
-};
-use crate::ast::LiteralValue::{False, Nil, NumberLiteral, StringLiteral, True};
-use crate::code_span::CodeSpan;
-use crate::parsing::ParsingError;
-use crate::parsing::Result;
-use crate::parsing::{consume, try_parse};
-use crate::scanning::{Token, TokenStream, TokenType};
 use std::convert::TryFrom;
+
+use crate::{
+    ast::{
+        expressions::{
+            Assignment, Binary, BinaryOperator, Call, Expression, Identifier, Literal, Unary,
+            UnaryOperator,
+        },
+        LiteralValue::{False, Nil, NumberLiteral, StringLiteral, True},
+    },
+    code_span::CodeSpan,
+    parsing::{consume, try_parse, ParsingError, Result},
+    scanning::{Token, TokenStream, TokenType},
+};
 
 pub fn parse_expression(tokens: &mut TokenStream) -> Result<Expression> {
     parse_assignment(tokens)

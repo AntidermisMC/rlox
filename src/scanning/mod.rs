@@ -1,15 +1,15 @@
 mod scanning_error;
 pub mod token;
 
-use crate::code_span::CodeSpan;
-use crate::location::Location;
-use crate::location_tracking_iterator::LocationTrackingIterator;
-use crate::scanning::token::TokenType::*;
-pub use scanning_error::ScanningError;
 use std::str::Chars;
-pub use token::token_stream::TokenStream;
-pub use token::Token;
-pub use token::TokenType;
+
+pub use scanning_error::ScanningError;
+pub use token::{token_stream::TokenStream, Token, TokenType};
+
+use crate::{
+    code_span::CodeSpan, location::Location, location_tracking_iterator::LocationTrackingIterator,
+    scanning::token::TokenType::*,
+};
 
 /// Returns the current span and starts a new one.
 fn consume_span(start: &mut Location, end: Location) -> CodeSpan {
@@ -50,7 +50,8 @@ fn extend_with_digits(source: &mut LocationTrackingIterator<Chars>, s: &mut std:
 }
 
 /// Scans a text stream.
-/// start should be Location::start() unless resuming from a previous iterator's text.
+/// start should be Location::start() unless resuming from a previous iterator's
+/// text.
 pub fn scan(source: &mut LocationTrackingIterator<Chars>, start: &mut Location) -> Option<Token> {
     while let Some(char) = source.next() {
         return match char {
@@ -222,7 +223,8 @@ pub fn scan(source: &mut LocationTrackingIterator<Chars>, start: &mut Location) 
     return None;
 }
 
-/// Scans every token in the given source and returns either the first error or a vector of all scanner tokens.
+/// Scans every token in the given source and returns either the first error or
+/// a vector of all scanner tokens.
 #[cfg(test)]
 pub fn scan_all(code: &str) -> Vec<Token> {
     let mut source = LocationTrackingIterator::new(code.chars());

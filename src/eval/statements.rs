@@ -1,11 +1,16 @@
-use crate::ast::declarations::{FunctionDeclaration, VariableDeclaration};
-use crate::ast::expressions::{Expression, ExpressionNode, ExpressionVisitor};
-use crate::ast::statements::{Conditional, ForLoop, Statement, WhileLoop};
-use crate::ast::types::ValueType;
-use crate::eval::runtime_error::RuntimeError;
-use crate::eval::Evaluator;
-use crate::{eval, StatementVisitor};
 use std::fmt::Write;
+
+use crate::{
+    ast::{
+        declarations::{FunctionDeclaration, VariableDeclaration},
+        expressions::{Expression, ExpressionNode, ExpressionVisitor},
+        statements::{Conditional, ForLoop, Statement, WhileLoop},
+        types::ValueType,
+    },
+    eval,
+    eval::{runtime_error::RuntimeError, Evaluator},
+    StatementVisitor,
+};
 
 impl StatementVisitor for Evaluator {
     type Return = eval::Result<()>;

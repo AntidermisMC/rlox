@@ -1,10 +1,10 @@
-use crate::ast::expressions::BinaryOperator;
-use crate::ast::expressions::BinaryOperator::*;
-use crate::ast::expressions::UnaryOperator;
-use crate::ast::expressions::UnaryOperator::*;
-use crate::error::Error;
-use crate::scanning::{Token, TokenType};
 use std::convert::TryFrom;
+
+use crate::{
+    ast::expressions::{BinaryOperator, BinaryOperator::*, UnaryOperator, UnaryOperator::*},
+    error::Error,
+    scanning::{Token, TokenType},
+};
 
 impl TryFrom<&Token> for BinaryOperator {
     type Error = crate::error::Error;

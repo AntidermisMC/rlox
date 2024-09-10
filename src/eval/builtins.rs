@@ -1,6 +1,8 @@
-use crate::ast::types::{NativeFunction, ValueType};
-use crate::code_span::CodeSpan;
-use crate::eval::Result;
+use crate::{
+    ast::types::{NativeFunction, ValueType},
+    code_span::CodeSpan,
+    eval::Result,
+};
 
 fn clock(_: Vec<ValueType>, _: CodeSpan) -> Result<ValueType> {
     Ok(ValueType::Number(

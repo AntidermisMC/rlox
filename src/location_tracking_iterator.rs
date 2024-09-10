@@ -89,8 +89,7 @@ impl<T: Iterator<Item = char>> LocationTrackingIterator<T> {
 
 #[cfg(test)]
 mod tests {
-    use crate::location::Location;
-    use crate::location_tracking_iterator::LocationTrackingIterator;
+    use crate::{location::Location, location_tracking_iterator::LocationTrackingIterator};
 
     fn assert_eq(expected: &str) {
         assert_eq!(

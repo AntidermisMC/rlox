@@ -1,8 +1,13 @@
-use crate::ast::expressions::{Expression, Identifier};
-use crate::ast::types::Function;
-use crate::ast::LiteralValue;
-use std::fmt::{Display, Formatter};
-use std::rc::Rc;
+use std::{
+    fmt::{Display, Formatter},
+    rc::Rc,
+};
+
+use crate::ast::{
+    expressions::{Expression, Identifier},
+    types::Function,
+    LiteralValue,
+};
 
 pub struct VariableDeclaration {
     pub name: Identifier,

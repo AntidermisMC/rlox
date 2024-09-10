@@ -1,6 +1,7 @@
 pub mod token_stream;
-use crate::code_span::CodeSpan;
 use std::fmt::{Debug, Display, Formatter};
+
+use crate::code_span::CodeSpan;
 
 #[derive(Debug, PartialEq, Clone)]
 /// Represents the type of a token.

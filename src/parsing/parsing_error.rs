@@ -1,8 +1,9 @@
-use crate::code_span::CodeSpan;
-use crate::location::Location;
-use crate::scanning::Token;
-use std::error::Error;
-use std::fmt::{Display, Formatter};
+use std::{
+    error::Error,
+    fmt::{Display, Formatter},
+};
+
+use crate::{code_span::CodeSpan, location::Location, scanning::Token};
 
 #[derive(Debug)]
 pub enum ParsingError {

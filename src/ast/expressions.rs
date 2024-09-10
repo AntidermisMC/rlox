@@ -1,7 +1,6 @@
 use std::fmt::{Display, Formatter};
 
-use crate::ast::LiteralValue;
-use crate::code_span::CodeSpan;
+use crate::{ast::LiteralValue, code_span::CodeSpan};
 
 pub enum Expression {
     Literal(Literal),

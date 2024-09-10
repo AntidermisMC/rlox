@@ -1,5 +1,7 @@
-use std::fmt::Write;
-use std::io::{Stdout, Write as WriteIo};
+use std::{
+    fmt::Write,
+    io::{Stdout, Write as WriteIo},
+};
 
 pub enum OutputStream {
     File(String),

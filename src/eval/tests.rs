@@ -1,13 +1,11 @@
-use crate::ast::expressions::ExpressionVisitor;
-use crate::ast::statements::StatementVisitor;
-use crate::ast::types::ValueType;
-use crate::eval::builtins::test_prelude;
-use crate::eval::output_stream::OutputStream;
-use crate::eval::Evaluator;
-use crate::eval::ValueType::*;
-use crate::parsing::{parse, parse_expression};
-use crate::scanning::TokenStream;
 use std::rc::Rc;
+
+use crate::{
+    ast::{expressions::ExpressionVisitor, statements::StatementVisitor, types::ValueType},
+    eval::{builtins::test_prelude, output_stream::OutputStream, Evaluator, ValueType::*},
+    parsing::{parse, parse_expression},
+    scanning::TokenStream,
+};
 
 fn assert_eval_expr(code: &str, result: ValueType) {
     let mut tokens = TokenStream::new(code);

@@ -1,6 +1,9 @@
+use std::{
+    error::Error,
+    fmt::{Display, Formatter},
+};
+
 use crate::code_span::CodeSpan;
-use std::error::Error;
-use std::fmt::{Display, Formatter};
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum ScanningError {
