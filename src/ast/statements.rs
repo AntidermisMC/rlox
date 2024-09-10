@@ -3,10 +3,13 @@ use crate::ast::expressions::Expression;
 use crate::ast::LiteralValue;
 use std::fmt::{Debug, Display, Formatter};
 
+use super::declarations::ClassDeclaration;
+
 pub enum Statement {
     Print(Expression),
     Expression(Expression),
     VariableDeclaration(VariableDeclaration),
+    ClassDeclaration(ClassDeclaration),
     Block(Statements),
     Conditional(Box<Conditional>),
     WhileLoop(Box<WhileLoop>),
@@ -61,6 +64,7 @@ impl Display for Statement {
             Statement::Print(expr) => write!(f, "print {};", expr),
             Statement::Expression(expr) => write!(f, "{};", expr),
             Statement::VariableDeclaration(v) => write!(f, "{}", v),
+            Statement::ClassDeclaration(decl) => write!(f, "{}", decl),
             Statement::Block(stmts) => write!(f, "{{\n{}}}", stmts),
             Statement::Conditional(c) => write!(f, "{}", c),
             Statement::WhileLoop(l) => write!(f, "while ({}) {}", l.condition, l.statement),

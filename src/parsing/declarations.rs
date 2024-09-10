@@ -1,5 +1,5 @@
 use super::Result;
-use crate::ast::declarations::{FunctionDeclaration, VariableDeclaration};
+use crate::ast::declarations::{ClassDeclaration, FunctionDeclaration, VariableDeclaration};
 use crate::ast::expressions::{Expression, Identifier, Literal};
 use crate::ast::statements::{Statement, Statements};
 use crate::ast::types::Function;
@@ -18,13 +18,42 @@ pub fn parse_declaration(tokens: &mut TokenStream) -> Result<Statement> {
                 consume(tokens, TokenType::Semicolon)?;
                 Ok(Statement::VariableDeclaration(var_dec))
             }
-            TokenType::Fun => parse_function_declaration(tokens),
+            TokenType::Fun => {
+                let fun_dec = parse_function_declaration(tokens)?;
+                Ok(Statement::FunctionDeclaration(fun_dec))
+            }
+            TokenType::Class => {
+                let class_dec = parse_class_declaration(tokens)?;
+                Ok(Statement::ClassDeclaration(class_dec))
+            }
             _ => parse_statement(tokens),
         }
     } else {
         Err(ParsingError::UnexpectedEndOfTokenStream(
             tokens.current_position(),
         ))
+    }
+}
+
+pub fn parse_class_declaration(tokens: &mut TokenStream) -> Result<ClassDeclaration> {
+    consume(tokens, TokenType::Class)?;
+    match tokens.next() {
+        Some(token) => {
+            let span = token.get_span();
+            let mut methods = Vec::new();
+            match token.consume() {
+                TokenType::Identifier(name) => {
+                    consume(tokens, TokenType::LeftBrace)?;
+                    while tokens.peek().is_some_and(|t| t.is_of_type(TokenType::Fun)) {
+                        methods.push(parse_function_declaration(tokens)?);
+                    }
+                    consume(tokens, TokenType::RightBrace)?;
+                    Ok(ClassDeclaration { name: Identifier { ident: name, location: span }, methods })
+                }
+                token_type => Err(ParsingError::UnexpectedToken(Token::new(token_type, span))),
+            }
+        }
+        None => Err(ParsingError::UnexpectedEndOfTokenStream(tokens.current_position())),
     }
 }
 
@@ -63,7 +92,7 @@ pub fn parse_variable_declaration(tokens: &mut TokenStream) -> Result<VariableDe
     }
 }
 
-pub fn parse_function_declaration(tokens: &mut TokenStream) -> Result<Statement> {
+pub fn parse_function_declaration(tokens: &mut TokenStream) -> Result<FunctionDeclaration> {
     consume(tokens, TokenType::Fun)?;
 
     match tokens.next() {
@@ -77,7 +106,7 @@ pub fn parse_function_declaration(tokens: &mut TokenStream) -> Result<Statement>
                 let stmts = parse_declarations(tokens);
                 consume(tokens, TokenType::RightBrace)?;
 
-                Ok(Statement::FunctionDeclaration(FunctionDeclaration {
+                Ok(FunctionDeclaration {
                     name: Identifier {
                         ident: s.clone(),
                         location: span,
@@ -87,7 +116,7 @@ pub fn parse_function_declaration(tokens: &mut TokenStream) -> Result<Statement>
                         body: Statements { stmts },
                         span,
                     }),
-                }))
+                })
             } else {
                 Err(ParsingError::UnexpectedToken(token))
             }

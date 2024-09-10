@@ -17,6 +17,9 @@ impl StatementVisitor for Evaluator {
             Statement::VariableDeclaration(declaration) => {
                 self.visit_variable_declaration(declaration)
             }
+            Statement::ClassDeclaration(_) => {
+                Ok(()) // TODO
+            }
             Statement::Block(stmts) => {
                 self.env.push_env();
                 for stmt in &stmts.stmts {

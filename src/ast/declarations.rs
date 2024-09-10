@@ -33,3 +33,18 @@ impl Display for FunctionDeclaration {
         write!(f, "fun {}{}", self.name, self.function)
     }
 }
+
+pub struct ClassDeclaration {
+    pub name: Identifier,
+    pub methods: Vec<FunctionDeclaration>,
+}
+
+impl Display for ClassDeclaration {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "class {} {{ ", self.name)?;
+        for method in &self.methods {
+            write!(f, "{}", method)?;
+        }
+        write!(f, " }}")
+    }
+}
