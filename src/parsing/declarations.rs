@@ -1,5 +1,3 @@
-use std::rc::Rc;
-
 use super::Result;
 use crate::{
     ast::{
@@ -130,11 +128,12 @@ pub fn parse_function(tokens: &mut TokenStream) -> Result<FunctionDeclaration> {
                         ident: s.clone(),
                         location: span,
                     },
-                    function: Rc::new(Function {
+                    function: Function {
                         args: params,
                         body: Statements { stmts },
                         span,
-                    }),
+                    }
+                    .into(),
                 })
             } else {
                 Err(ParsingError::UnexpectedToken(token))

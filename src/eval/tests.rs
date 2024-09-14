@@ -300,8 +300,4 @@ gen_tests!(
     "nil"
 );
 
-gen_tests!(
-    class_print,
-    "class MyClass {} print MyClass;",
-    "MyClass"
-);
+gen_tests!(class_print, "class MyClass {} print MyClass;", "MyClass");

@@ -1,4 +1,7 @@
-use std::{collections::HashSet, rc::Rc};
+use std::{
+    collections::{HashMap, HashSet},
+    rc::Rc,
+};
 
 use crate::{
     ast::{
@@ -160,6 +163,20 @@ impl ExpressionVisitor for Evaluator {
                     })
                 }
             }
+            ValueType::Class(class) => {
+                if arguments.len() != 0 {
+                    Err(RuntimeError::InvalidArgumentCount(
+                        call.location,
+                        0,
+                        arguments.len(),
+                    ))
+                } else {
+                    Ok(Value {
+                        location: call.location,
+                        value: ValueType::Object(Object { properties: HashMap::new(), class }.into()),
+                    })
+                }
+            }
             _ => Err(RuntimeError::NotCallable(callee.location)),
         }
     }
@@ -237,7 +254,7 @@ fn test_equality(left: &Value, right: &Value) -> bool {
         (ValueType::Nil, ValueType::Nil) => true,
         (ValueType::Number(l), ValueType::Number(r)) => l == r,
         (ValueType::String(l), ValueType::String(r)) => l == r,
-        (ValueType::Object(Object::Object(l)), ValueType::Object(Object::Object(r))) => *l == *r,
+        (ValueType::Object(_), ValueType::Object(_)) => todo!(),
         (_, _) => false,
     }
 }

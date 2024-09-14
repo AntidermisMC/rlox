@@ -16,10 +16,10 @@ pub enum ValueType {
     Number(f64),
     Boolean(bool),
     Nil,
-    Object(Object),
+    Object(Rc<Object>),
     NativeFunction(NativeFunction, usize),
     Function(Rc<Function>),
-    Class(Class),
+    Class(Rc<Class>),
 }
 
 #[derive(PartialEq, Clone, Debug)]
@@ -41,8 +41,10 @@ pub enum Type {
 }
 
 #[derive(Clone)]
-pub enum Object {
-    Object(Rc<HashMap<String, Value>>),
+pub struct Object {
+    pub properties: HashMap<String, Value>,
+    pub class: Rc<Class>,
+
 }
 
 pub type NativeFunction = fn(Vec<ValueType>, CodeSpan) -> Result<ValueType>;
@@ -82,9 +84,9 @@ impl Value {
 
 impl Debug for Object {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        let Object::Object(obj) = self;
+        write!(f, "{} {{", self.class.name)?;
         f.write_str("{")?;
-        let mut iter = obj.iter();
+        let mut iter = self.properties.iter();
         if let Some((name, value)) = iter.next() {
             write!(f, "{}: {}", name, value)?
         }
@@ -130,7 +132,7 @@ impl Display for ValueType {
             ValueType::Number(n) => write!(f, "{}", n),
             ValueType::Boolean(b) => write!(f, "{}", b),
             ValueType::Nil => write!(f, "nil"),
-            ValueType::Object(_) => write!(f, "[Object object]"),
+            ValueType::Object(_) => write!(f, "{}", todo!()),
             ValueType::NativeFunction(_, _) => write!(f, "<native fn>"),
             ValueType::Function(_) => write!(f, "<function>"),
             ValueType::Class(class) => write!(f, "{}", class.name),

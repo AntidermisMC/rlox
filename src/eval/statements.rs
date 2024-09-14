@@ -21,9 +21,7 @@ impl StatementVisitor for Evaluator {
             Statement::VariableDeclaration(declaration) => {
                 self.visit_variable_declaration(declaration)
             }
-            Statement::ClassDeclaration(decl) => {
-                self.visit_class_declaration(decl)
-            }
+            Statement::ClassDeclaration(decl) => self.visit_class_declaration(decl),
             Statement::Block(stmts) => {
                 self.env.push_env();
                 for stmt in &stmts.stmts {
@@ -55,7 +53,12 @@ impl StatementVisitor for Evaluator {
     fn visit_class_declaration(&mut self, decl: &ClassDeclaration) -> Self::Return {
         self.env.define(
             decl.name.ident.to_string(),
-            ValueType::Class(crate::ast::types::Class { name: decl.name.clone() })
+            ValueType::Class(
+                crate::ast::types::Class {
+                    name: decl.name.clone(),
+                }
+                .into(),
+            ),
         );
         Ok(())
     }
