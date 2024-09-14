@@ -62,7 +62,7 @@ pub fn scan(source: &mut LocationTrackingIterator<Chars>, start: &mut Location) 
                     if next == Some('\n') {
                         *start = source.get_location();
                         break;
-                    } else if next == None {
+                    } else if next.is_none() {
                         return None;
                     }
                 }
@@ -220,7 +220,7 @@ pub fn scan(source: &mut LocationTrackingIterator<Chars>, start: &mut Location) 
             )),
         };
     }
-    return None;
+    None
 }
 
 /// Scans every token in the given source and returns either the first error or

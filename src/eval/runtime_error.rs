@@ -37,17 +37,17 @@ impl RuntimeError {
 
 impl Display for RuntimeError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        let error_type = match &self {
-            &RuntimeError::MismatchedTypes(_, _, _) => "Mismatched Type".to_string(),
-            &RuntimeError::DivisionByZero(_) => "Division by zero".to_string(),
-            &RuntimeError::UnboundName(_, ident) => format!("Unbound name {}", ident),
-            &RuntimeError::WriteError(_) => "Write failed".to_string(),
-            &RuntimeError::NotCallable(_) => "Not a callable object".to_string(),
-            &RuntimeError::InvalidArgumentCount(_, expected, actual) => format!(
+        let error_type = match self {
+            RuntimeError::MismatchedTypes(_, _, _) => "Mismatched Type".to_string(),
+            RuntimeError::DivisionByZero(_) => "Division by zero".to_string(),
+            RuntimeError::UnboundName(_, ident) => format!("Unbound name {}", ident),
+            RuntimeError::WriteError(_) => "Write failed".to_string(),
+            RuntimeError::NotCallable(_) => "Not a callable object".to_string(),
+            RuntimeError::InvalidArgumentCount(_, expected, actual) => format!(
                 "Invalid argument count (expected {}, got {}",
                 expected, actual
             ),
-            &RuntimeError::Return(value) => "Return outside function".to_string(),
+            RuntimeError::Return(value) => "Return outside function".to_string(),
         };
         write!(f, "{}: {}", self.location(), error_type)
     }

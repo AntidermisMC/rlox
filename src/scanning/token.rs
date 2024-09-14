@@ -72,11 +72,7 @@ impl Token {
     }
 
     pub fn is_identifier(&self) -> bool {
-        if let TokenType::Identifier(_) = self.token {
-            true
-        } else {
-            false
-        }
+        matches!(self.token, TokenType::Identifier(_))
     }
 
     pub fn get_type(&self) -> &TokenType {

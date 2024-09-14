@@ -49,7 +49,7 @@ impl<T: Iterator<Item = char>> LocationTrackingIterator<T> {
     }
 
     pub fn peek(&mut self) -> Option<&<Self as Iterator>::Item> {
-        if self.peek_1 == None {
+        if self.peek_1.is_none() {
             self.peek_1 = self.it.next();
         }
         self.peek_1.as_ref()
@@ -66,9 +66,9 @@ impl<T: Iterator<Item = char>> LocationTrackingIterator<T> {
     }
 
     pub fn peek_2(&mut self) -> Option<&<Self as Iterator>::Item> {
-        if self.peek_2 != None {
+        if self.peek_2.is_some() {
             self.peek_2.as_ref()
-        } else if let Some(_) = self.peek() {
+        } else if self.peek().is_some() {
             self.peek_2 = self.it.next();
             self.peek_2.as_ref()
         } else {

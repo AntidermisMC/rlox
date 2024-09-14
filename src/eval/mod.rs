@@ -40,8 +40,5 @@ impl Evaluator {
 pub type Result<T> = std::result::Result<T, RuntimeError>;
 
 fn is_truthy(value: &ValueType) -> bool {
-    match value {
-        ValueType::Boolean(false) | ValueType::Nil => false,
-        _ => true,
-    }
+    !matches!(value, ValueType::Boolean(false) | ValueType::Nil)
 }

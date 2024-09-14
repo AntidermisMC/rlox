@@ -41,7 +41,7 @@ fn run_prompt() -> std::io::Result<u8> {
         std::io::stdout().flush()?;
         let mut input = String::new();
         std::io::stdin().read_line(&mut input)?;
-        if input == "" {
+        if input.is_empty() {
             return Ok(0);
         }
         run(&mut input, OutputStream::StdOut(std::io::stdout()));
@@ -67,7 +67,7 @@ fn run(code: &mut str, out: OutputStream) -> Option<u8> {
         Err(e) => print!("{}", e),
         Ok(stmts) => {
             for stmt in &stmts.stmts {
-                let res = evaluator.visit_statement(&stmt);
+                let res = evaluator.visit_statement(stmt);
                 match res {
                     Ok(_) => (),
                     Err(e) => print!("{}", e),

@@ -260,7 +260,7 @@ fn disjunction(
     if eval::is_truthy(&left.value) {
         Ok(left.value)
     } else {
-        visitor.visit_expression(&right).map(|val| val.value)
+        visitor.visit_expression(right).map(|val| val.value)
     }
 }
 
@@ -272,7 +272,7 @@ fn conjunction(
     if !eval::is_truthy(&left.value) {
         Ok(left.value)
     } else {
-        visitor.visit_expression(&right).map(|val| val.value)
+        visitor.visit_expression(right).map(|val| val.value)
     }
 }
 

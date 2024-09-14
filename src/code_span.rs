@@ -32,19 +32,19 @@ impl CodeSpan {
             let mut s = String::from(&source[self.start.line][self.start.char..]);
             let mut line = self.start.line + 1;
             while line < self.end.line {
-                s.extend(source[line].chars());
+                s.push_str(source[line]);
                 line += 1;
             }
-            s.extend(source[line][..self.end.char].chars());
+            s.push_str(&source[line][..self.end.char]);
             s
         }
     }
 
     pub fn combine(left: CodeSpan, right: CodeSpan) -> Self {
-        return CodeSpan {
+        CodeSpan {
             start: left.start,
             end: right.end,
-        };
+        }
     }
 }
 

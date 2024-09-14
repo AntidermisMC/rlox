@@ -99,10 +99,7 @@ impl<'a> TokenStream<'a> {
     }
 
     pub fn has_next(&mut self) -> bool {
-        match self.peek() {
-            Some(_) => true,
-            None => false,
-        }
+        self.peek().is_some()
     }
 }
 

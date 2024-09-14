@@ -28,7 +28,7 @@ impl StatementVisitor for Evaluator {
             Statement::Block(stmts) => {
                 self.env.push_env();
                 for stmt in &stmts.stmts {
-                    self.visit_statement(&stmt)?;
+                    self.visit_statement(stmt)?;
                 }
                 self.env.pop_env();
                 Ok(())

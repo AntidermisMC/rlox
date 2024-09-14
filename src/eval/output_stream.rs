@@ -15,7 +15,7 @@ impl Write for OutputStream {
             OutputStream::StdOut(out) => out
                 .write(s.as_bytes())
                 .map(|_| ())
-                .map_err(|_| std::fmt::Error::default()),
+                .map_err(|_| std::fmt::Error),
         }
     }
 }

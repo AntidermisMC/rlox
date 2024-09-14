@@ -54,7 +54,7 @@ pub struct ForLoop {
 impl Display for Statements {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         for stmt in &self.stmts {
-            write!(f, "{}\n", stmt)?
+            writeln!(f, "{}", stmt)?
         }
         Ok(())
     }
