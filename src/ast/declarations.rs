@@ -46,10 +46,10 @@ pub struct ClassDeclaration {
 
 impl Display for ClassDeclaration {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "class {} {{ ", self.name)?;
+        writeln!(f, "class {} {{", self.name)?;
         for method in &self.methods {
-            write!(f, "{}", method)?;
+            writeln!(f, "{}{}", method.name, method.function)?;
         }
-        write!(f, " }}")
+        write!(f, "}}")
     }
 }

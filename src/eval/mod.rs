@@ -2,7 +2,7 @@ pub use builtins::prelude;
 use runtime_error::RuntimeError;
 
 use crate::{
-    ast::types::{NativeFunction, Type, Value, ValueType},
+    ast::types::{NativeFunction, Type, ValueType},
     eval::{environment::Environment, output_stream::OutputStream},
 };
 

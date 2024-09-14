@@ -52,8 +52,8 @@ pub fn parse_class_declaration(tokens: &mut TokenStream) -> Result<ClassDeclarat
             match token.consume() {
                 TokenType::Identifier(name) => {
                     consume(tokens, TokenType::LeftBrace)?;
-                    while tokens.peek().is_some_and(|t| t.is_of_type(TokenType::Fun)) {
-                        methods.push(parse_function_declaration(tokens)?);
+                    while tokens.peek().is_some_and(|t| t.is_identifier()) {
+                        methods.push(parse_function(tokens)?);
                     }
                     consume(tokens, TokenType::RightBrace)?;
                     Ok(ClassDeclaration {
@@ -110,7 +110,10 @@ pub fn parse_variable_declaration(tokens: &mut TokenStream) -> Result<VariableDe
 
 pub fn parse_function_declaration(tokens: &mut TokenStream) -> Result<FunctionDeclaration> {
     consume(tokens, TokenType::Fun)?;
+    parse_function(tokens)
+}
 
+pub fn parse_function(tokens: &mut TokenStream) -> Result<FunctionDeclaration> {
     match tokens.next() {
         Some(token) => {
             let span = token.get_span();
@@ -188,5 +191,13 @@ mod tests {
         "fun my_fun() {  }",
         "fun f(a) { print a;\n }",
         "fun g(a, b, c) { print a + b * c;\nprint \"hello\";\n }"
+    );
+
+    gen_tests!(
+        test_class_declarations,
+        parse_class_declaration,
+        "class EmptyClass {\n}",
+        "class OneMethod {\nempty_method() {  }\n}",
+        "class TwoMethods {\nmethod_one() { return 2;\n }\nmethod_two(a) { print a;\n }\n}"
     );
 }
