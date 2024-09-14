@@ -2,13 +2,12 @@ use std::fmt::Write;
 
 use crate::{
     ast::{
-        declarations::{FunctionDeclaration, VariableDeclaration},
+        declarations::{ClassDeclaration, FunctionDeclaration, VariableDeclaration},
         expressions::{Expression, ExpressionNode, ExpressionVisitor},
         statements::{Conditional, ForLoop, Statement, WhileLoop},
         types::ValueType,
     },
-    eval,
-    eval::{runtime_error::RuntimeError, Evaluator},
+    eval::{self, runtime_error::RuntimeError, Evaluator},
     StatementVisitor,
 };
 
@@ -22,8 +21,8 @@ impl StatementVisitor for Evaluator {
             Statement::VariableDeclaration(declaration) => {
                 self.visit_variable_declaration(declaration)
             }
-            Statement::ClassDeclaration(_) => {
-                Ok(()) // TODO
+            Statement::ClassDeclaration(decl) => {
+                self.visit_class_declaration(decl)
             }
             Statement::Block(stmts) => {
                 self.env.push_env();
@@ -50,6 +49,14 @@ impl StatementVisitor for Evaluator {
     fn visit_variable_declaration(&mut self, decl: &VariableDeclaration) -> Self::Return {
         let init = self.visit_expression(&decl.initializer)?;
         self.env.define(decl.name.ident.to_string(), init.value);
+        Ok(())
+    }
+
+    fn visit_class_declaration(&mut self, decl: &ClassDeclaration) -> Self::Return {
+        self.env.define(
+            decl.name.ident.to_string(),
+            ValueType::Class(crate::ast::types::Class { name: decl.name.clone() })
+        );
         Ok(())
     }
 

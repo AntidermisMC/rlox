@@ -120,6 +120,7 @@ pub trait StatementVisitor {
     fn visit_statement(&mut self, stmt: &Statement) -> Self::Return;
     fn visit_print(&mut self, expr: &Expression) -> Self::Return;
     fn visit_variable_declaration(&mut self, decl: &VariableDeclaration) -> Self::Return;
+    fn visit_class_declaration(&mut self, decl: &ClassDeclaration) -> Self::Return;
     fn visit_conditional(&mut self, cond: &Conditional) -> Self::Return;
     fn visit_while_loop(&mut self, while_loop: &WhileLoop) -> Self::Return;
     fn visit_for_loop(&mut self, for_loop: &ForLoop) -> Self::Return;

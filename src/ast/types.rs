@@ -19,6 +19,7 @@ pub enum ValueType {
     Object(Object),
     NativeFunction(NativeFunction, usize),
     Function(Rc<Function>),
+    Class(Class),
 }
 
 #[derive(PartialEq, Clone, Debug)]
@@ -36,6 +37,7 @@ pub enum Type {
     Object,
     NativeFunction,
     Function,
+    Class,
 }
 
 #[derive(Clone)]
@@ -52,6 +54,11 @@ pub struct Function {
     pub span: CodeSpan,
 }
 
+#[derive(Debug, Clone)]
+pub struct Class {
+    pub name: Identifier,
+}
+
 impl ValueType {
     pub fn as_type(&self) -> Type {
         match self {
@@ -62,6 +69,7 @@ impl ValueType {
             ValueType::Object(_) => Type::Object,
             ValueType::NativeFunction(_, _) => Type::NativeFunction,
             ValueType::Function(_) => Type::Function,
+            ValueType::Class(_) => Type::Class,
         }
     }
 }
@@ -125,6 +133,7 @@ impl Display for ValueType {
             ValueType::Object(_) => write!(f, "[Object object]"),
             ValueType::NativeFunction(_, _) => write!(f, "<native fn>"),
             ValueType::Function(_) => write!(f, "<function>"),
+            ValueType::Class(class) => write!(f, "{}", class.name),
         }
     }
 }

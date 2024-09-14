@@ -47,7 +47,7 @@ impl Display for RuntimeError {
                 "Invalid argument count (expected {}, got {}",
                 expected, actual
             ),
-            RuntimeError::Return(value) => "Return outside function".to_string(),
+            RuntimeError::Return(_) => "Return outside function".to_string(),
         };
         write!(f, "{}: {}", self.location(), error_type)
     }

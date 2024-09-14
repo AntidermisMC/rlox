@@ -58,7 +58,7 @@ pub struct Assignment {
     pub location: CodeSpan,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Identifier {
     pub ident: String,
     pub location: CodeSpan,

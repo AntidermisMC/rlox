@@ -299,3 +299,9 @@ gen_tests!(
     "fun a(){ return; } print a();",
     "nil"
 );
+
+gen_tests!(
+    class_print,
+    "class MyClass {} print MyClass;",
+    "MyClass"
+);
