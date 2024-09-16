@@ -4,7 +4,14 @@ use std::{
     fmt::{Display, Formatter},
 };
 
-use crate::{ast::types::Value, code_span::CodeSpan, eval::Type};
+use crate::{
+    ast::{
+        expressions::Identifier,
+        types::{Object, Value},
+    },
+    code_span::CodeSpan,
+    eval::Type,
+};
 
 #[derive(Debug)]
 pub enum RuntimeError {
@@ -19,6 +26,8 @@ pub enum RuntimeError {
     NotCallable(CodeSpan),
     InvalidArgumentCount(CodeSpan, usize, usize),
     Return(Value),
+    GetOnNonObject(Value),
+    UndefinedProperty(Object, Identifier),
 }
 
 impl RuntimeError {
@@ -31,6 +40,8 @@ impl RuntimeError {
             RuntimeError::NotCallable(span) => span,
             RuntimeError::InvalidArgumentCount(span, _, _) => span,
             RuntimeError::Return(value) => &value.location,
+            RuntimeError::GetOnNonObject(val) => &val.location,
+            RuntimeError::UndefinedProperty(_, ident) => &ident.location,
         }
     }
 }
@@ -48,6 +59,10 @@ impl Display for RuntimeError {
                 expected, actual
             ),
             RuntimeError::Return(_) => "Return outside function".to_string(),
+            RuntimeError::GetOnNonObject(val) => format!("Value '{}' is not an object", val.value),
+            Self::UndefinedProperty(obj, ident) => {
+                format!("Property {} does not exist on {}", ident, obj)
+            }
         };
         write!(f, "{}: {}", self.location(), error_type)
     }

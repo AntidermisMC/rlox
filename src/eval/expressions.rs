@@ -6,19 +6,16 @@ use std::{
 use crate::{
     ast::{
         expressions::{
-            Assignment, Binary, BinaryOperator, Call, Expression, ExpressionVisitor, Identifier,
-            Literal, Unary, UnaryOperator,
+            Assignment, Binary, BinaryOperator, Call, Expression, ExpressionVisitor, Get,
+            Identifier, Literal, Unary, UnaryOperator,
         },
         types::{Object, Type, Value, ValueType},
         LiteralValue,
     },
     code_span::CodeSpan,
-    eval,
     eval::{
-        runtime_error::{
-            RuntimeError,
-            RuntimeError::{DivisionByZero, MismatchedTypes},
-        },
+        self,
+        runtime_error::RuntimeError::{self, DivisionByZero, MismatchedTypes},
         Evaluator,
     },
     StatementVisitor,
@@ -187,8 +184,25 @@ impl ExpressionVisitor for Evaluator {
         }
     }
 
-    fn visit_get(&mut self, get: &crate::ast::expressions::Get) -> Self::Return {
-        todo!()
+    fn visit_get(&mut self, get: &Get) -> Self::Return {
+        let expr = self.visit_expression(&get.object)?;
+        let span = expr.location;
+        let obj = match expr.value {
+            ValueType::Object(o) => o,
+            v => {
+                return Err(RuntimeError::GetOnNonObject(Value {
+                    location: span,
+                    value: v,
+                }))
+            }
+        };
+        match obj.properties.get(&get.name.ident) {
+            Some(value) => Ok(value.clone()),
+            None => Err(RuntimeError::UndefinedProperty(
+                (*obj).clone(),
+                get.name.clone(),
+            )),
+        }
     }
 }
 

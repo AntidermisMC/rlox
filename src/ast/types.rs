@@ -131,10 +131,10 @@ impl Display for ValueType {
             ValueType::Number(n) => write!(f, "{}", n),
             ValueType::Boolean(b) => write!(f, "{}", b),
             ValueType::Nil => write!(f, "nil"),
-            ValueType::Object(o) => write!(f, "{} instance", o.class.name),
+            ValueType::Object(o) => write!(f, "{}", o),
             ValueType::NativeFunction(_, _) => write!(f, "<native fn>"),
             ValueType::Function(_) => write!(f, "<function>"),
-            ValueType::Class(class) => write!(f, "{}", class.name),
+            ValueType::Class(c) => write!(f, "{}", c),
         }
     }
 }
@@ -152,5 +152,17 @@ impl Display for Function {
         }
 
         write!(f, ") {{ {} }}", self.body)
+    }
+}
+
+impl Display for Class {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.name)
+    }
+}
+
+impl Display for Object {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{} instance", self.class.name)
     }
 }
