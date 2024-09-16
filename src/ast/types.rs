@@ -44,7 +44,6 @@ pub enum Type {
 pub struct Object {
     pub properties: HashMap<String, Value>,
     pub class: Rc<Class>,
-
 }
 
 pub type NativeFunction = fn(Vec<ValueType>, CodeSpan) -> Result<ValueType>;

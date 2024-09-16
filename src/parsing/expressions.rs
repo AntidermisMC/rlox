@@ -3,7 +3,7 @@ use std::convert::TryFrom;
 use crate::{
     ast::{
         expressions::{
-            Assignment, Binary, BinaryOperator, Call, Expression, Identifier, Literal, Unary,
+            Assignment, Binary, BinaryOperator, Call, Expression, Get, Identifier, Literal, Unary,
             UnaryOperator,
         },
         LiteralValue::{False, Nil, NumberLiteral, StringLiteral, True},
@@ -211,6 +211,29 @@ fn parse_call(tokens: &mut TokenStream) -> Result<Expression> {
                 arguments,
                 location: CodeSpan::combine(span, paren.get_span()),
             });
+        } else if token.is_of_type(TokenType::Dot) {
+            tokens.next();
+            expr = match tokens.next() {
+                Some(identifier_token) => {
+                    let span = identifier_token.get_span();
+                    match identifier_token.consume() {
+                        TokenType::Identifier(ident) => Expression::Get(Get {
+                            name: Identifier {
+                                ident,
+                                location: span,
+                            },
+                            object: Box::new(expr),
+                            location: span,
+                        }),
+                        tt => return Err(ParsingError::UnexpectedToken(Token::new(tt, span))),
+                    }
+                }
+                None => {
+                    return Err(ParsingError::UnexpectedEndOfTokenStream(
+                        tokens.current_position(),
+                    ))
+                }
+            };
         } else {
             break;
         }
@@ -390,4 +413,6 @@ mod tests {
         "one_arg(1)",
         "lots_of_args(test(), \"a\", a == b)"
     );
+
+    gen_tests!(gets, parse_expression, "a.b", "a.b.c", "a().b.c()");
 }

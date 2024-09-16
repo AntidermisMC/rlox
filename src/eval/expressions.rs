@@ -173,12 +173,22 @@ impl ExpressionVisitor for Evaluator {
                 } else {
                     Ok(Value {
                         location: call.location,
-                        value: ValueType::Object(Object { properties: HashMap::new(), class }.into()),
+                        value: ValueType::Object(
+                            Object {
+                                properties: HashMap::new(),
+                                class,
+                            }
+                            .into(),
+                        ),
                     })
                 }
             }
             _ => Err(RuntimeError::NotCallable(callee.location)),
         }
+    }
+
+    fn visit_get(&mut self, get: &crate::ast::expressions::Get) -> Self::Return {
+        todo!()
     }
 }
 
