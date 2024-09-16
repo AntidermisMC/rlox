@@ -131,7 +131,7 @@ impl Display for ValueType {
             ValueType::Number(n) => write!(f, "{}", n),
             ValueType::Boolean(b) => write!(f, "{}", b),
             ValueType::Nil => write!(f, "nil"),
-            ValueType::Object(_) => write!(f, "{}", todo!()),
+            ValueType::Object(o) => write!(f, "{} instance", o.class.name),
             ValueType::NativeFunction(_, _) => write!(f, "<native fn>"),
             ValueType::Function(_) => write!(f, "<function>"),
             ValueType::Class(class) => write!(f, "{}", class.name),

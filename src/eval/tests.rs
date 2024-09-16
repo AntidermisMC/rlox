@@ -301,3 +301,5 @@ gen_tests!(
 );
 
 gen_tests!(class_print, "class MyClass {} print MyClass;", "MyClass");
+
+gen_tests!(object_print, "class MyClass {} print MyClass();", "MyClass instance");
