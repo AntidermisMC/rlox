@@ -3,8 +3,8 @@ use std::convert::TryFrom;
 use crate::{
     ast::{
         expressions::{
-            Assignment, Binary, BinaryOperator, Call, Expression, Get, Identifier, Literal, Unary,
-            UnaryOperator,
+            Assignment, Binary, BinaryOperator, Call, Expression, Get, Identifier, Literal, Set,
+            Unary, UnaryOperator,
         },
         LiteralValue::{False, Nil, NumberLiteral, StringLiteral, True},
     },
@@ -68,11 +68,18 @@ fn parse_assignment(tokens: &mut TokenStream) -> Result<Expression> {
         if token.is_of_type(TokenType::Equal) {
             tokens.force_next()?;
             let init = parse_assignment(tokens)?;
-            let span = CodeSpan::new(expr.get_location().start, init.get_location().end);
+            let span = CodeSpan::combine(expr.get_location(), init.get_location());
             return if let Expression::Identifier(ident) = expr {
                 Ok(Expression::Assignment(Assignment {
                     ident,
                     expr: Box::new(init),
+                    location: span,
+                }))
+            } else if let Expression::Get(get) = expr {
+                Ok(Expression::Set(Set {
+                    object: get.object,
+                    name: get.name,
+                    value: Box::new(init),
                     location: span,
                 }))
             } else {
@@ -395,4 +402,6 @@ mod tests {
     );
 
     gen_tests!(gets, parse_expression, "a.b", "a.b.c", "a().b.c()");
+
+    gen_tests!(sets, parse_expression, "a.b = c", "a().b().c = d()", "a.b = c.d = e");
 }

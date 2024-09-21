@@ -6,8 +6,7 @@ use std::{
 use crate::{
     ast::{
         expressions::{
-            Assignment, Binary, BinaryOperator, Call, Expression, ExpressionVisitor, Get,
-            Identifier, Literal, Unary, UnaryOperator,
+            Assignment, Binary, BinaryOperator, Call, Expression, ExpressionVisitor, Get, Identifier, Literal, Set, Unary, UnaryOperator
         },
         types::{Object, Type, Value, ValueType},
         LiteralValue,
@@ -203,6 +202,10 @@ impl ExpressionVisitor for Evaluator {
                 get.name.clone(),
             )),
         }
+    }
+
+    fn visit_set(&mut self, set: &Set) -> Self::Return {
+        todo!()
     }
 }
 

@@ -10,6 +10,7 @@ pub enum Expression {
     Assignment(Assignment),
     Call(Call),
     Get(Get),
+    Set(Set),
 }
 
 #[derive(Clone)]
@@ -77,6 +78,13 @@ pub struct Get {
     pub location: CodeSpan,
 }
 
+pub struct Set {
+    pub object: Box<Expression>,
+    pub name: Identifier,
+    pub value: Box<Expression>,
+    pub location: CodeSpan,
+}
+
 impl Expression {
     pub fn get_location(&self) -> CodeSpan {
         match self {
@@ -87,6 +95,7 @@ impl Expression {
             Expression::Assignment(a) => a.location,
             Expression::Call(c) => c.location,
             Expression::Get(g) => g.location,
+            Expression::Set(s) => s.location,
         }
     }
 }
@@ -164,7 +173,7 @@ impl Priority for Expression {
             Expression::BinaryOperation(b) => b.operator.priority(),
             Expression::Identifier(i) => i.priority(),
             Expression::Assignment(a) => a.priority(),
-            Expression::Call(_) | Expression::Get(_) => 7,
+            Expression::Call(_) | Expression::Get(_) | Expression::Set(_) => 7,
         }
     }
 }
@@ -306,6 +315,7 @@ impl Display for Expression {
             Self::Assignment(a) => write!(f, "{}", a),
             Self::Call(call) => write!(f, "{}", call),
             Self::Get(g) => write!(f, "{}.{}", g.object, g.name),
+            Self::Set(s) => write!(f, "{}.{} = {}", s.object, s.name, s.value),
         }
     }
 }
@@ -332,6 +342,7 @@ pub trait ExpressionVisitor: Sized {
             Expression::Assignment(a) => a.accept(self),
             Expression::Call(c) => self.visit_call(c),
             Expression::Get(g) => self.visit_get(g),
+            Expression::Set(s) => self.visit_set(s),
         }
     }
 
@@ -342,4 +353,5 @@ pub trait ExpressionVisitor: Sized {
     fn visit_assignment(&mut self, assignment: &Assignment) -> Self::Return;
     fn visit_call(&mut self, call: &Call) -> Self::Return;
     fn visit_get(&mut self, get: &Get) -> Self::Return;
+    fn visit_set(&mut self, set: &Set) -> Self::Return;
 }
