@@ -43,66 +43,54 @@ pub fn parse_declaration(tokens: &mut TokenStream) -> Result<Statement> {
 
 pub fn parse_class_declaration(tokens: &mut TokenStream) -> Result<ClassDeclaration> {
     consume(tokens, TokenType::Class)?;
-    match tokens.next() {
-        Some(token) => {
-            let span = token.get_span();
-            let mut methods = Vec::new();
-            match token.consume() {
-                TokenType::Identifier(name) => {
-                    consume(tokens, TokenType::LeftBrace)?;
-                    while tokens.peek().is_some_and(|t| t.is_identifier()) {
-                        methods.push(parse_function(tokens)?);
-                    }
-                    consume(tokens, TokenType::RightBrace)?;
-                    Ok(ClassDeclaration {
-                        name: Identifier {
-                            ident: name,
-                            location: span,
-                        },
-                        methods,
-                    })
-                }
-                token_type => Err(ParsingError::UnexpectedToken(Token::new(token_type, span))),
+    let token = tokens.force_next()?;
+    let span = token.get_span();
+    let mut methods = Vec::new();
+    match token.consume() {
+        TokenType::Identifier(name) => {
+            consume(tokens, TokenType::LeftBrace)?;
+            while tokens.peek().is_some_and(|t| t.is_identifier()) {
+                methods.push(parse_function(tokens)?);
             }
+            consume(tokens, TokenType::RightBrace)?;
+            Ok(ClassDeclaration {
+                name: Identifier {
+                    ident: name,
+                    location: span,
+                },
+                methods,
+            })
         }
-        None => Err(ParsingError::UnexpectedEndOfTokenStream(
-            tokens.current_position(),
-        )),
+        token_type => Err(ParsingError::UnexpectedToken(Token::new(token_type, span))),
     }
 }
 
 pub fn parse_variable_declaration(tokens: &mut TokenStream) -> Result<VariableDeclaration> {
     consume(tokens, TokenType::Var)?;
-    match tokens.next() {
-        Some(token) => {
-            let position = token.get_span();
-            match token.consume() {
-                TokenType::Identifier(s) => {
-                    let initializer = if consume(tokens, TokenType::Equal).is_ok() {
-                        parse_expression(tokens)?
-                    } else {
-                        let location = tokens.current_position();
-                        Expression::Literal(Literal::new(
-                            LiteralValue::Nil,
-                            CodeSpan::new(location, location),
-                        ))
-                    };
-                    Ok(VariableDeclaration {
-                        name: Identifier {
-                            ident: s,
-                            location: position,
-                        },
-                        initializer,
-                    })
-                }
-                token_type => Err(ParsingError::UnexpectedToken(Token::new(
-                    token_type, position,
-                ))),
-            }
+    let token = tokens.force_next()?;
+    let position = token.get_span();
+    match token.consume() {
+        TokenType::Identifier(s) => {
+            let initializer = if consume(tokens, TokenType::Equal).is_ok() {
+                parse_expression(tokens)?
+            } else {
+                let location = tokens.current_position();
+                Expression::Literal(Literal::new(
+                    LiteralValue::Nil,
+                    CodeSpan::new(location, location),
+                ))
+            };
+            Ok(VariableDeclaration {
+                name: Identifier {
+                    ident: s,
+                    location: position,
+                },
+                initializer,
+            })
         }
-        None => Err(ParsingError::UnexpectedEndOfTokenStream(
-            tokens.current_position(),
-        )),
+        token_type => Err(ParsingError::UnexpectedToken(Token::new(
+            token_type, position,
+        ))),
     }
 }
 
@@ -112,36 +100,30 @@ pub fn parse_function_declaration(tokens: &mut TokenStream) -> Result<FunctionDe
 }
 
 pub fn parse_function(tokens: &mut TokenStream) -> Result<FunctionDeclaration> {
-    match tokens.next() {
-        Some(token) => {
-            let span = token.get_span();
-            if let TokenType::Identifier(s) = token.get_type() {
-                consume(tokens, TokenType::LeftParen)?;
-                let params = parse_parameters(tokens);
-                consume(tokens, TokenType::RightParen)?;
-                consume(tokens, TokenType::LeftBrace)?;
-                let stmts = parse_declarations(tokens);
-                consume(tokens, TokenType::RightBrace)?;
+    let token = tokens.force_next()?;
+    let span = token.get_span();
+    if let TokenType::Identifier(s) = token.get_type() {
+        consume(tokens, TokenType::LeftParen)?;
+        let params = parse_parameters(tokens);
+        consume(tokens, TokenType::RightParen)?;
+        consume(tokens, TokenType::LeftBrace)?;
+        let stmts = parse_declarations(tokens);
+        consume(tokens, TokenType::RightBrace)?;
 
-                Ok(FunctionDeclaration {
-                    name: Identifier {
-                        ident: s.clone(),
-                        location: span,
-                    },
-                    function: Function {
-                        args: params,
-                        body: Statements { stmts },
-                        span,
-                    }
-                    .into(),
-                })
-            } else {
-                Err(ParsingError::UnexpectedToken(token))
+        Ok(FunctionDeclaration {
+            name: Identifier {
+                ident: s.clone(),
+                location: span,
+            },
+            function: Function {
+                args: params,
+                body: Statements { stmts },
+                span,
             }
-        }
-        None => Err(ParsingError::UnexpectedEndOfTokenStream(
-            tokens.current_position(),
-        )),
+            .into(),
+        })
+    } else {
+        Err(ParsingError::UnexpectedToken(token))
     }
 }
 

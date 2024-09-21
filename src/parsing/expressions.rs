@@ -66,7 +66,7 @@ fn parse_assignment(tokens: &mut TokenStream) -> Result<Expression> {
 
     if let Some(token) = tokens.peek() {
         if token.is_of_type(TokenType::Equal) {
-            tokens.next();
+            tokens.force_next()?;
             let init = parse_assignment(tokens)?;
             let span = CodeSpan::new(expr.get_location().start, init.get_location().end);
             return if let Expression::Identifier(ident) = expr {
@@ -177,23 +177,17 @@ fn parse_factor(tokens: &mut TokenStream) -> Result<Expression> {
 }
 
 fn parse_unary(tokens: &mut TokenStream) -> Result<Expression> {
-    match tokens.next() {
-        None => Err(ParsingError::UnexpectedEndOfTokenStream(
-            tokens.current_position(),
-        )),
-        Some(tok) => {
-            if tok.is_of_type(TokenType::Bang) || tok.is_of_type(TokenType::Minus) {
-                let expr = parse_unary(tokens)?;
-                Ok(Expression::UnaryOperation(Unary {
-                    op: UnaryOperator::try_from(&tok).unwrap(),
-                    expr: Box::new(expr),
-                    location: tok.get_span(),
-                }))
-            } else {
-                tokens.back();
-                parse_call(tokens)
-            }
-        }
+    let tok = tokens.force_next()?;
+    if tok.is_of_type(TokenType::Bang) || tok.is_of_type(TokenType::Minus) {
+        let expr = parse_unary(tokens)?;
+        Ok(Expression::UnaryOperation(Unary {
+            op: UnaryOperator::try_from(&tok).unwrap(),
+            expr: Box::new(expr),
+            location: tok.get_span(),
+        }))
+    } else {
+        tokens.back();
+        parse_call(tokens)
     }
 }
 
@@ -212,27 +206,19 @@ fn parse_call(tokens: &mut TokenStream) -> Result<Expression> {
                 location: CodeSpan::combine(span, paren.get_span()),
             });
         } else if token.is_of_type(TokenType::Dot) {
-            tokens.next();
-            expr = match tokens.next() {
-                Some(identifier_token) => {
-                    let span = identifier_token.get_span();
-                    match identifier_token.consume() {
-                        TokenType::Identifier(ident) => Expression::Get(Get {
-                            name: Identifier {
-                                ident,
-                                location: span,
-                            },
-                            object: Box::new(expr),
-                            location: span,
-                        }),
-                        tt => return Err(ParsingError::UnexpectedToken(Token::new(tt, span))),
-                    }
-                }
-                None => {
-                    return Err(ParsingError::UnexpectedEndOfTokenStream(
-                        tokens.current_position(),
-                    ))
-                }
+            tokens.force_next()?;
+            let identifier_token = tokens.force_next()?;
+            let span = identifier_token.get_span();
+            expr = match identifier_token.consume() {
+                TokenType::Identifier(ident) => Expression::Get(Get {
+                    name: Identifier {
+                        ident,
+                        location: span,
+                    },
+                    object: Box::new(expr),
+                    location: span,
+                }),
+                tt => return Err(ParsingError::UnexpectedToken(Token::new(tt, span))),
             };
         } else {
             break;
@@ -275,40 +261,34 @@ fn parse_arguments(tokens: &mut TokenStream) -> Result<Vec<Expression>> {
 }
 
 fn parse_primary(tokens: &mut TokenStream) -> Result<Expression> {
-    if let Some(token) = tokens.next() {
-        let span = token.get_span();
-        match token.consume() {
-            TokenType::Identifier(s) => Ok(Expression::Identifier(Identifier {
-                ident: s,
-                location: span,
-            })),
-            TokenType::False => Ok(Expression::Literal(Literal::new(False, span))),
-            TokenType::True => Ok(Expression::Literal(Literal::new(True, span))),
-            TokenType::Nil => Ok(Expression::Literal(Literal::new(Nil, span))),
+    let token = tokens.force_next()?;
+    let span = token.get_span();
+    match token.consume() {
+        TokenType::Identifier(s) => Ok(Expression::Identifier(Identifier {
+            ident: s,
+            location: span,
+        })),
+        TokenType::False => Ok(Expression::Literal(Literal::new(False, span))),
+        TokenType::True => Ok(Expression::Literal(Literal::new(True, span))),
+        TokenType::Nil => Ok(Expression::Literal(Literal::new(Nil, span))),
 
-            TokenType::Number(n) => Ok(Expression::Literal(Literal::new(NumberLiteral(n), span))),
-            TokenType::String(s) => Ok(Expression::Literal(Literal::new(StringLiteral(s), span))),
+        TokenType::Number(n) => Ok(Expression::Literal(Literal::new(NumberLiteral(n), span))),
+        TokenType::String(s) => Ok(Expression::Literal(Literal::new(StringLiteral(s), span))),
 
-            TokenType::LeftParen => {
-                let expr = parse_expression(tokens)?;
-                match tokens.next() {
-                    Some(t) if t.is_of_type(TokenType::RightParen) => Ok(expr),
-                    Some(tok) => Err(ParsingError::UnexpectedToken(tok)),
-                    None => Err(ParsingError::UnexpectedEndOfTokenStream(
-                        tokens.current_position(),
-                    )),
-                }
+        TokenType::LeftParen => {
+            let expr = parse_expression(tokens)?;
+            let tok = tokens.force_next()?;
+            if tok.is_of_type(TokenType::RightParen) {
+                Ok(expr)
+            } else {
+                Err(ParsingError::UnexpectedToken(tok))
             }
-
-            invalid_token => Err(ParsingError::UnexpectedToken(Token::new(
-                invalid_token,
-                span,
-            ))),
         }
-    } else {
-        Err(ParsingError::UnexpectedEndOfTokenStream(
-            tokens.current_position(),
-        ))
+
+        invalid_token => Err(ParsingError::UnexpectedToken(Token::new(
+            invalid_token,
+            span,
+        ))),
     }
 }
 

@@ -36,16 +36,11 @@ pub fn parse_statement(tokens: &mut TokenStream) -> Result<Statement> {
             TokenType::LeftBrace => {
                 tokens.next();
                 let stmts = parse_declarations(tokens); // TODO error here
-                if let Some(rbrace) = tokens.next() {
-                    if rbrace.is_of_type(TokenType::RightBrace) {
-                        Ok(Statement::Block(Statements { stmts }))
-                    } else {
-                        Err(ParsingError::UnexpectedToken(rbrace))
-                    }
+                let rbrace = tokens.force_next()?;
+                if rbrace.is_of_type(TokenType::RightBrace) {
+                    Ok(Statement::Block(Statements { stmts }))
                 } else {
-                    Err(ParsingError::UnexpectedEndOfTokenStream(
-                        tokens.current_position(),
-                    ))
+                    Err(ParsingError::UnexpectedToken(rbrace))
                 }
             }
             TokenType::If => parse_conditional(tokens),
@@ -62,19 +57,14 @@ pub fn parse_statement(tokens: &mut TokenStream) -> Result<Statement> {
 }
 
 fn parse_print(tokens: &mut TokenStream) -> Result<Statement> {
-    if let Some(token) = tokens.next() {
-        match token.get_type() {
-            TokenType::Print => {
-                let expr = parse_expression(tokens)?;
-                consume(tokens, TokenType::Semicolon)?;
-                Ok(Statement::Print(expr))
-            }
-            _ => Err(ParsingError::UnexpectedToken(token)),
+    let token = tokens.force_next()?;
+    match token.get_type() {
+        TokenType::Print => {
+            let expr = parse_expression(tokens)?;
+            consume(tokens, TokenType::Semicolon)?;
+            Ok(Statement::Print(expr))
         }
-    } else {
-        Err(ParsingError::UnexpectedEndOfTokenStream(
-            tokens.current_position(),
-        ))
+        _ => Err(ParsingError::UnexpectedToken(token)),
     }
 }
 

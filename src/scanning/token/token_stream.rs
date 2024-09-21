@@ -38,6 +38,15 @@ impl<'a> TokenStream<'a> {
         }
     }
 
+    pub fn force_next(&mut self) -> Result<<Self as Iterator>::Item, crate::parsing::ParsingError> {
+        match self.next() {
+            Some(token) => Ok(token),
+            None => Err(crate::parsing::ParsingError::UnexpectedEndOfTokenStream(
+                self.current_position(),
+            )),
+        }
+    }
+
     /// Goes back one iteration
     pub fn back(&mut self) {
         if let Position::Index(n) = self.pos {
