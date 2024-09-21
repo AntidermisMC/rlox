@@ -6,7 +6,8 @@ use std::{
 use crate::{
     ast::{
         expressions::{
-            Assignment, Binary, BinaryOperator, Call, Expression, ExpressionVisitor, Get, Identifier, Literal, Set, Unary, UnaryOperator
+            Assignment, Binary, BinaryOperator, Call, Expression, ExpressionVisitor, Get,
+            Identifier, Literal, Set, Unary, UnaryOperator,
         },
         types::{Object, Type, Value, ValueType},
         LiteralValue,
@@ -170,10 +171,10 @@ impl ExpressionVisitor for Evaluator {
                     Ok(Value {
                         location: call.location,
                         value: ValueType::Object(
-                            Object {
+                            std::cell::RefCell::new(Object {
                                 properties: HashMap::new(),
                                 class,
-                            }
+                            })
                             .into(),
                         ),
                     })
@@ -195,17 +196,31 @@ impl ExpressionVisitor for Evaluator {
                 }))
             }
         };
-        match obj.properties.get(&get.name.ident) {
-            Some(value) => Ok(value.clone()),
-            None => Err(RuntimeError::UndefinedProperty(
-                (*obj).clone(),
-                get.name.clone(),
-            )),
-        }
+        let value = match obj.borrow().properties.get(&get.name.ident) {
+            Some(value) => value.clone(),
+            None => {
+                return Err(RuntimeError::UndefinedProperty(
+                    (obj.borrow()).clone(),
+                    get.name.clone(),
+                ))
+            }
+        };
+        Ok(value)
     }
 
     fn visit_set(&mut self, set: &Set) -> Self::Return {
-        todo!()
+        let target = self.visit_expression(&set.object)?;
+        let obj = match &target.value {
+            ValueType::Object(o) => o,
+            _ => return Err(RuntimeError::GetOnNonObject(target)),
+        };
+
+        let value = self.visit_expression(&set.value)?;
+
+        obj.borrow_mut()
+            .properties
+            .insert(set.name.ident.clone(), value.clone());
+        Ok(value)
     }
 }
 

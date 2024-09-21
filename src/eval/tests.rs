@@ -307,3 +307,9 @@ gen_tests!(
     "class MyClass {} print MyClass();",
     "MyClass instance"
 );
+
+gen_tests!(
+    object_get_set,
+    "class MyClass {} var o = MyClass(); o.p = 3; print o.p;",
+    "3"
+);

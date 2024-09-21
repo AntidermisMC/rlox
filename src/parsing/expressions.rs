@@ -403,5 +403,11 @@ mod tests {
 
     gen_tests!(gets, parse_expression, "a.b", "a.b.c", "a().b.c()");
 
-    gen_tests!(sets, parse_expression, "a.b = c", "a().b().c = d()", "a.b = c.d = e");
+    gen_tests!(
+        sets,
+        parse_expression,
+        "a.b = c",
+        "a().b().c = d()",
+        "a.b = c.d = e"
+    );
 }
