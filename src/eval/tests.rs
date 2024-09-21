@@ -317,3 +317,6 @@ gen_tests!(
 gen_tests!(object_methods, "class MyClass { method() { print 2; } } MyClass().method();", "2");
 
 gen_tests!(objects_fields_over_methods, "class MyClass { method() { print 2; } } var v = MyClass(); v.method = 1; print v.method;", "1");
+
+// This is because I do not do a resolving pass so environments are hopelessly borked.
+gen_tests!(rly_stupid, "fun a() { var myvar = 1; b(); return myvar; } fun b() { myvar = 2; } print a();", "2");
