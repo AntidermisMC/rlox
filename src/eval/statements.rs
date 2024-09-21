@@ -1,4 +1,5 @@
 use std::fmt::Write;
+use std::collections::HashMap;
 
 use crate::{
     ast::{
@@ -51,11 +52,18 @@ impl StatementVisitor for Evaluator {
     }
 
     fn visit_class_declaration(&mut self, decl: &ClassDeclaration) -> Self::Return {
+        let mut methods = HashMap::with_capacity(decl.methods.len());
+
+        for method in &decl.methods {
+            methods.insert(method.name.ident.clone(), method.function.clone());
+        }
+
         self.env.define(
             decl.name.ident.to_string(),
             ValueType::Class(
                 crate::ast::types::Class {
                     name: decl.name.clone(),
+                    methods,
                 }
                 .into(),
             ),

@@ -28,6 +28,7 @@ impl Display for VariableDeclaration {
     }
 }
 
+#[derive(Debug)]
 pub struct FunctionDeclaration {
     pub name: Identifier,
     pub function: Rc<Function>,

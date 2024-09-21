@@ -313,3 +313,7 @@ gen_tests!(
     "class MyClass {} var o = MyClass(); o.p = 3; print o.p;",
     "3"
 );
+
+gen_tests!(object_methods, "class MyClass { method() { print 2; } } MyClass().method();", "2");
+
+gen_tests!(objects_fields_over_methods, "class MyClass { method() { print 2; } } var v = MyClass(); v.method = 1; print v.method;", "1");

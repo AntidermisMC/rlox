@@ -187,7 +187,7 @@ impl ExpressionVisitor for Evaluator {
     fn visit_get(&mut self, get: &Get) -> Self::Return {
         let expr = self.visit_expression(&get.object)?;
         let span = expr.location;
-        let obj = match expr.value {
+        let obj_ref = match expr.value {
             ValueType::Object(o) => o,
             v => {
                 return Err(RuntimeError::GetOnNonObject(Value {
@@ -196,14 +196,20 @@ impl ExpressionVisitor for Evaluator {
                 }))
             }
         };
-        let value = match obj.borrow().properties.get(&get.name.ident) {
-            Some(value) => value.clone(),
-            None => {
-                return Err(RuntimeError::UndefinedProperty(
-                    (obj.borrow()).clone(),
-                    get.name.clone(),
-                ))
+        let obj = obj_ref.borrow();
+
+        let value = if let Some(value) = obj.properties.get(&get.name.ident) {
+            value.clone()
+        } else if let Some(method) = obj.class.methods.get(&get.name.ident) {
+            Value {
+                value: ValueType::Function(method.clone()),
+                location: get.name.location,
             }
+        } else {
+            return Err(RuntimeError::UndefinedProperty(
+                obj.clone(),
+                get.name.clone(),
+            ));
         };
         Ok(value)
     }

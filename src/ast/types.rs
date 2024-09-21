@@ -55,9 +55,10 @@ pub struct Function {
     pub span: CodeSpan,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct Class {
     pub name: Identifier,
+    pub methods: HashMap<String, Rc<Function>>,
 }
 
 impl ValueType {
